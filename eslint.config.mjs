@@ -1,0 +1,92 @@
+// @ts-check
+import eslint from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+export default tseslint.config(
+  {
+    ignores: ['eslint.config.mjs'],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  eslintPluginPrettierRecommended,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      sourceType: 'commonjs',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+  "rules": {
+        "@typescript-eslint/no-var-requires": 0,
+        "@typescript-eslint/interface-name-prefix": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "caughtErrorsIgnorePattern": "^_"
+            }
+        ],
+        "unused-imports/no-unused-imports": "error",
+        "unused-imports/no-unused-vars": [
+            "warn",
+            {
+                "vars": "all",
+                "varsIgnorePattern": "^_",
+                "args": "after-used",
+                "argsIgnorePattern": "^_"
+            }
+        ],
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+                "selector": "default",
+                "format": ["camelCase"],
+                "leadingUnderscore": "allow"
+            },
+            {
+                "selector": "memberLike",
+                "format": ["camelCase", "PascalCase", "snake_case"],
+                "leadingUnderscore": "allow"
+            },
+            { "selector": "typeLike", "format": ["PascalCase"] },
+            { "selector": "enum", "format": ["PascalCase"], "modifiers": [] },
+            { "selector": "enumMember", "format": ["PascalCase"] },
+            { "selector": "class", "format": ["PascalCase"] },
+            {
+                "selector": "variable",
+                "format": ["PascalCase", "camelCase", "UPPER_CASE"],
+                "modifiers": []
+            },
+            {
+                "selector": "interface",
+                "format": ["PascalCase"],
+                "prefix": ["I"]
+            },
+            {
+                "selector": "property",
+                "format": [
+                    "camelCase",
+                    "PascalCase",
+                    "snake_case",
+                    "UPPER_CASE"
+                ]
+            }
+        ],
+        "no-console": 1
+    }
+  },
+);
