@@ -31,6 +31,10 @@ export class UserV1Repository extends Repository<IUser> {
     };
   }
 
+  async createUser(request) {
+
+  }
+
   async findOneById(id: string): Promise<IUser> {
     return await this.findOneOrFail({
       where: { id },
