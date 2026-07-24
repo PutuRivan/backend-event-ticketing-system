@@ -31,7 +31,8 @@ export class InitialSchema1784272019273 implements MigrationInterface {
             role user_role NOT NULL DEFAULT 'USER',
 
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP
             );
         `);
 
@@ -43,7 +44,8 @@ export class InitialSchema1784272019273 implements MigrationInterface {
             description TEXT,
 
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP
             );
         `);
 
@@ -72,6 +74,7 @@ export class InitialSchema1784272019273 implements MigrationInterface {
 
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP,
 
             CONSTRAINT fk_events_category
                 FOREIGN KEY (category_id)
@@ -117,6 +120,7 @@ export class InitialSchema1784272019273 implements MigrationInterface {
 
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP,
 
             CONSTRAINT fk_orders_user
                 FOREIGN KEY (user_id)
@@ -169,6 +173,8 @@ export class InitialSchema1784272019273 implements MigrationInterface {
             pdf_path VARCHAR(500),
 
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP,
 
             CONSTRAINT fk_tickets_order
                 FOREIGN KEY (order_id)
