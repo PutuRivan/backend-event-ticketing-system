@@ -1,5 +1,5 @@
 import { DataSource, QueryFailedError } from 'typeorm';
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { UserPaginateV1Request } from "../dtos/requests/user-paginate-v1.request";
 import { UserV1Repository } from '../repositories/user-v1.repository';
 import { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
@@ -21,10 +21,30 @@ export class UserV1Service {
 
   async updateById(
     id: string,
-    dataUpdate: UserUpdateV1Request
+    dataUpdate: UserUpdateV1Request,
   ): Promise<IUser> {
-    const user = await this.findOneById(id)
-    return user
+
+    const user = await this.findOneById(id);
+
+    if (!user) {
+      throw new NotFoundException('User Not Found');
+    }
+
+
+    if (dataUpdate.name !== undefined) {
+      user.name = dataUpdate.name;
+    }
+
+    if (dataUpdate.email !== undefined) {
+      user.email = dataUpdate.email;
+    }
+
+    if (dataUpdate.role !== undefined) {
+      user.role = dataUpdate.role;
+    }
+
+
+    return await this.userV1Repository.updateUser(user);
   }
 
   async softDeleteById(id: string): Promise<Boolean> {

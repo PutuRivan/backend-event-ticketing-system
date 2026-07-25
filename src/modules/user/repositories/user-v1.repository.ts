@@ -31,10 +31,6 @@ export class UserV1Repository extends Repository<IUser> {
     };
   }
 
-  async createUser(request) {
-
-  }
-
   async findOneById(id: string): Promise<IUser> {
     return await this.findOneOrFail({
       where: { id },
@@ -45,5 +41,9 @@ export class UserV1Repository extends Repository<IUser> {
     return await this.findOne({ where: { email } });
   }
 
-
+  async updateUser(
+    user: Users,
+  ): Promise<Users> {
+    return await this.save(user);
+  }
 }
