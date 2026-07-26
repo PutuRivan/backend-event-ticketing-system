@@ -6,7 +6,7 @@ export const eventCreateV1Schema = z.object({
   title: z.string(),
   description: z.string().optional(),
   location: z.string(),
-  eventDate: z.coerce.date(),
+  eventDate: z.string().datetime(),
   ticketPrice: z.number(),
   quota: z.number(),
   published: z.boolean(),

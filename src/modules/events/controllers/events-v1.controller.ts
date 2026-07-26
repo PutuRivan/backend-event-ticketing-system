@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
 import { eventCreateV1Request } from '../dtos/requests/event-v1-create.request';
 import { EventPaginateV1Request } from '../dtos/requests/event-v1-paginate.request';
@@ -6,6 +7,7 @@ import { EventV1Response } from '../dtos/responses/event-v1.response';
 import { EventV1Service } from './../services/events-v1.service';
 import { Controller, Get, Post, Patch, Delete, Query, Body, Param } from "@nestjs/common";
 
+@ApiTags('Event')
 @Controller({ path: "events", version: "1" })
 export class EventsV1Controller {
   constructor(private readonly EventV1Service: EventV1Service) { }

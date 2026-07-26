@@ -6,7 +6,7 @@ export const eventUpdateV1Schema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   location: z.string().optional(),
-  eventDate: z.coerce.date().optional(),
+  eventDate: z.string().datetime().optional(),
   ticketPrice: z.number().optional(),
   quota: z.number().optional(),
 })

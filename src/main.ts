@@ -5,6 +5,7 @@ import { config } from './config';
 import { VersioningType } from '@nestjs/common';
 import * as path from 'path';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { JwtAuthTypeEnum } from './infrastructures/modules/jwt/enums/jwt-type.enum';
 
 
 async function bootstrap() {
@@ -36,15 +37,38 @@ async function bootstrap() {
   });
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('API documentation for the application')
+    .setTitle('Event Ticketing API Documentation')
+    .setDescription('API documentation for the Event Ticketing System')
     .setVersion('1.0')
     .addTag('api')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT for access token',
+        in: 'header',
+      },
+      JwtAuthTypeEnum.AccessToken,
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT for refresh token',
+        in: 'header',
+      },
+      JwtAuthTypeEnum.RefreshToken,
+    )
     .build();
 
   const documentFactory = () =>
     SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('docs', app, documentFactory);
+
 
   await app.listen(config.app.port);
 }

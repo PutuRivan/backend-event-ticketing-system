@@ -5,7 +5,9 @@ import { eventCategoriesUpdateV1Request } from '../dtos/requests/event-categorie
 import { EventCategoriesV1Response } from '../dtos/responses/event-categories-v1.response';
 import { EventCategoriesV1Service } from './../services/event-categories-v1.service';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Event Categories')
 @Controller({ path: "event-categories", version: "1" })
 export class EventCategoriesV1Controller {
   constructor(private readonly EventCategoriesV1Service: EventCategoriesV1Service) { }

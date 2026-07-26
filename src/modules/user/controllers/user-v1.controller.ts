@@ -14,7 +14,9 @@ import {
 } from '@nestjs/common';
 import { UserUpdateV1Request } from '../dtos/requests/user-update-v1.request';
 import { IPaginationData } from '../../../shared/interfaces/paginate-response.interface';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('User')
 @Controller({ path: 'users', version: '1' })
 export class UserV1Controller {
   constructor(private readonly userV1Service: UserV1Service) { }
