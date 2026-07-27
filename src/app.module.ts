@@ -10,16 +10,27 @@ import { UserModule } from './modules/user/user.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './infrastructures/modules/jwt/guards/jwt-auth.guard';
 import { RoleGuard } from './infrastructures/modules/jwt/guards/permission.guard';
+import { QueueModule } from './infrastructures/modules/queue/queue.module';
+import { BullModule } from '@nestjs/bullmq';
+import { config } from './config';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
+    BullModule.forRoot({
+      connection: {
+        host: config.redis.host,
+        port: config.redis.port,
+      }
+    }),
     AuthModule,
     UserModule,
     EventCategoriesModule,
     EventModule,
     OrdersModule,
     TicketsModule,
+
+    QueueModule
   ],
   providers: [
     {

@@ -1,4 +1,3 @@
-import { EventCategoriesV1Repository } from './../../event-categories/repositories/event-categories-v1.repository';
 import { EventV1Repository } from '../../events/repositories/events-v1.repository';
 import { OrdersV1Repository } from './../repositories/orders-v1.repository';
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
@@ -7,6 +6,9 @@ import { OrderPaginateV1Request } from '../dtos/requests/orders-paginate-v1.requ
 import { ordersCreateV1Request } from '../dtos/requests/orders-create-v1.request';
 import { OrderStatusEnum } from '../../../shared/enums/order-status.enum';
 import { TicketsV1Service } from '../../tickets/services/tickets-v1.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { QueueName, QueueOrderJob } from '../../../infrastructures/modules/queue/constants/queue.contant';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class OrdersV1Service {
@@ -14,6 +16,9 @@ export class OrdersV1Service {
     private readonly ordersV1Repository: OrdersV1Repository,
     private readonly eventV1Repository: EventV1Repository,
     private readonly ticketsV1Service: TicketsV1Service,
+
+    @InjectQueue(QueueName.Order)
+    private readonly orderQueue: Queue,
   ) { }
 
   async paginate(paginationDto: OrderPaginateV1Request) {
@@ -47,7 +52,20 @@ export class OrdersV1Service {
       Date.now() + 15 * 60 * 1000
     );
 
-    return await this.ordersV1Repository.createOrder(dataOrder, totalPrice, expiredAt)
+    const newOrder = await this.ordersV1Repository.createOrder(dataOrder, totalPrice, expiredAt)
+
+    await this.orderQueue.add(
+      QueueOrderJob.ExpireOrder,
+      {
+        orderId: newOrder.id
+      },
+      {
+        delay: 15 * 60 * 1000,
+        attempts: 3,
+      }
+    );
+
+    return newOrder
   }
 
   async findOneById(id: string): Promise<IOrder> {
@@ -101,5 +119,37 @@ export class OrdersV1Service {
     order.status = OrderStatusEnum.CANCELLED;
 
     return await this.ordersV1Repository.save(order);
+  }
+
+  async expireOrder(
+    idOrder: string
+  ): Promise<void> {
+
+
+    const order =
+      await this.ordersV1Repository.findOneById(
+        idOrder
+      );
+
+
+    if (!order) {
+      return;
+    }
+
+
+    if (
+      order.status !== OrderStatusEnum.PENDING
+    ) {
+      return;
+    }
+
+
+    await this.ordersV1Repository.update(
+      idOrder,
+      {
+        status: OrderStatusEnum.EXPIRED
+      }
+    );
+
   }
 }

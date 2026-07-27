@@ -26,6 +26,7 @@
     "migration:generate": "npm run typeorm -- -d src/infrastructures/databases/config.ts migration:generate"
   },
   "dependencies": {
+    "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.2",
@@ -34,6 +35,7 @@
     "@nestjs/swagger": "^11.4.5",
     "@nestjs/typeorm": "^11.0.3",
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.81.2",
     "dotenv": "^17.4.2",
     "nestjs-zod": "^5.4.0",
     "passport-jwt": "^4.0.1",

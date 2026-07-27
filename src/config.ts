@@ -46,4 +46,8 @@ export const config = {
       process.env.JWT_FORGOT_PASSWORD_EXPIRES_IN_SECONDS || 3600
     ), // 1 hour,
   },
+  redis: {
+    host: process.env.REDIS_HOST || '',
+    port: +(process.env.REDIS_PORT || 6379),
+  },
 }
