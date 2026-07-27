@@ -1,3 +1,4 @@
+import { TicketsModule } from './modules/tickets/tickets.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig } from './infrastructures/databases/config';
@@ -18,6 +19,7 @@ import { RoleGuard } from './infrastructures/modules/jwt/guards/permission.guard
     EventCategoriesModule,
     EventModule,
     OrdersModule,
+    TicketsModule,
   ],
   providers: [
     {

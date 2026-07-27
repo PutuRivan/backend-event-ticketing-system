@@ -6,12 +6,14 @@ import { IOrder } from '../../../infrastructures/databases/interfaces/order.inte
 import { OrderPaginateV1Request } from '../dtos/requests/orders-paginate-v1.request';
 import { ordersCreateV1Request } from '../dtos/requests/orders-create-v1.request';
 import { OrderStatusEnum } from '../../../shared/enums/order-status.enum';
+import { TicketsV1Service } from '../../tickets/services/tickets-v1.service';
 
 @Injectable()
 export class OrdersV1Service {
   constructor(
     private readonly ordersV1Repository: OrdersV1Repository,
     private readonly eventV1Repository: EventV1Repository,
+    private readonly ticketsV1Service: TicketsV1Service,
   ) { }
 
   async paginate(paginationDto: OrderPaginateV1Request) {
@@ -61,7 +63,7 @@ export class OrdersV1Service {
     if (!order) {
       throw new NotFoundException('Order Not Found')
     }
-
+    // Cek Order Status
     if (order.status !== OrderStatusEnum.PENDING) {
       throw new BadRequestException(
         "Payment Failed"
@@ -71,7 +73,13 @@ export class OrdersV1Service {
     order.status = OrderStatusEnum.PAID;
     order.paidAt = new Date();
 
-    return await this.ordersV1Repository.save(order);
+    const savedOrder = await this.ordersV1Repository.save(order);
+
+    await this.ticketsV1Service.createTicket(
+      savedOrder.id
+    );
+
+    return savedOrder;
   }
 
   async cancelOrder(
