@@ -6,6 +6,9 @@ import { EventCategoriesModule } from './modules/event-categories/event-categori
 import { EventModule } from './modules/events/events.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { UserModule } from './modules/user/user.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './infrastructures/modules/jwt/guards/jwt-auth.guard';
+import { RoleGuard } from './infrastructures/modules/jwt/guards/permission.guard';
 
 @Module({
   imports: [
@@ -16,6 +19,15 @@ import { UserModule } from './modules/user/user.module';
     EventModule,
     OrdersModule,
   ],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard,
+    },
+  ],
 })
 export class AppModule { }

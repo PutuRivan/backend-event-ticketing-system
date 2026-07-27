@@ -6,17 +6,21 @@ import { EventUpdateV1Request } from '../dtos/requests/event-v1-update.request';
 import { EventV1Response } from '../dtos/responses/event-v1.response';
 import { EventV1Service } from './../services/events-v1.service';
 import { Controller, Get, Post, Patch, Delete, Query, Body, Param } from "@nestjs/common";
+import { Public } from '../../../shared/decorators/public.decorator';
+import { Roles } from '../../../shared/decorators/role.decorator';
+import { RoleEnum } from '../../../shared/enums/role.enum';
 
 @ApiTags('Event')
 @Controller({ path: "events", version: "1" })
 export class EventsV1Controller {
-  constructor(private readonly EventV1Service: EventV1Service) { }
+  constructor(private readonly eventV1Service: EventV1Service) { }
 
+  @Public()
   @Get('')
   async getAllEvent(
     @Query() paginateDto: EventPaginateV1Request
   ): Promise<IPaginateData<EventV1Response>> {
-    const result = await this.EventV1Service.paginate(paginateDto)
+    const result = await this.eventV1Service.paginate(paginateDto)
 
     return {
       meta: result.meta,
@@ -24,40 +28,43 @@ export class EventsV1Controller {
     }
   }
 
+  @Roles(RoleEnum.ADMIN)
   @Post('')
   async createEvent(
     @Body() dataEvent: eventCreateV1Request
   ): Promise<EventV1Response> {
-    const result = await this.EventV1Service.createEvent(dataEvent)
+    const result = await this.eventV1Service.createEvent(dataEvent)
 
     return EventV1Response.MapEntity(result)
   }
 
+  @Public()
   @Get(':eventId')
   async getEventById(
     @Param('eventId') eventId: string
   ): Promise<EventV1Response> {
-    const data = await this.EventV1Service.findOneById(eventId)
+    const data = await this.eventV1Service.findOneById(eventId)
 
     return EventV1Response.MapEntity(data)
   }
 
+  @Roles(RoleEnum.ADMIN)
   @Patch(':eventId')
   async updateEventById(
     @Param('eventId') eventId: string,
     @Body() updateData: EventUpdateV1Request
   ): Promise<EventV1Response> {
-    const data = await this.EventV1Service.updateById(eventId, updateData)
+    const data = await this.eventV1Service.updateById(eventId, updateData)
 
     return EventV1Response.MapEntity(data)
-
   }
 
+  @Roles(RoleEnum.ADMIN)
   @Delete(':eventId')
   async deleteEventById(
     @Param('eventId') eventId: string
   ): Promise<EventV1Response | null> {
-    await this.EventV1Service.softDeleteById(eventId)
+    await this.eventV1Service.softDeleteById(eventId)
 
     return null
   }
@@ -66,7 +73,7 @@ export class EventsV1Controller {
   async updateEventToPublish(
     @Param('eventId') eventId: string
   ): Promise<EventV1Response> {
-    const data = await this.EventV1Service.updatePublishedStatus(eventId, true)
+    const data = await this.eventV1Service.updatePublishedStatus(eventId, true)
 
     return EventV1Response.MapEntity(data)
   }
@@ -75,7 +82,7 @@ export class EventsV1Controller {
   async updateEventToUnpublish(
     @Param('eventId') eventId: string
   ): Promise<EventV1Response> {
-    const data = await this.EventV1Service.updatePublishedStatus(eventId, false)
+    const data = await this.eventV1Service.updatePublishedStatus(eventId, false)
 
     return EventV1Response.MapEntity(data)
   }

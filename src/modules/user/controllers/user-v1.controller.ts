@@ -15,12 +15,15 @@ import {
 import { UserUpdateV1Request } from '../dtos/requests/user-update-v1.request';
 import { IPaginationData } from '../../../shared/interfaces/paginate-response.interface';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../../../shared/decorators/role.decorator';
+import { RoleEnum } from '../../../shared/enums/role.enum';
 
 @ApiTags('User')
 @Controller({ path: 'users', version: '1' })
 export class UserV1Controller {
   constructor(private readonly userV1Service: UserV1Service) { }
 
+  @Roles(RoleEnum.ADMIN)
   @Get()
   async getAllUsers(
     @Query() paginationDto: UserPaginateV1Request
@@ -33,6 +36,7 @@ export class UserV1Controller {
     };
   }
 
+  @Roles(RoleEnum.ADMIN)
   @Get(':userId')
   async getById(
     @Param('userId') userId: string
@@ -42,6 +46,7 @@ export class UserV1Controller {
     return UserV1Response.MapEntity(data)
   }
 
+  @Roles(RoleEnum.USER)
   @Patch(':userId')
   async updateById(
     @Param('userId') userId: string,
@@ -52,6 +57,7 @@ export class UserV1Controller {
     return UserV1Response.MapEntity(data);
   }
 
+  @Roles(RoleEnum.USER)
   @Delete(':userId')
   async deleteById(
     @Param('userId') userId: string
