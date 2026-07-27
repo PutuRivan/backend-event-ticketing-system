@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -13,6 +14,7 @@ import { Tickets } from "./tickets.entity";
 import { Events } from "./events.entity";
 
 @Entity("orders")
+@Index(["eventId", "status"])
 export class Orders extends BaseEntity implements IOrder {
 
   @Column()
@@ -40,6 +42,9 @@ export class Orders extends BaseEntity implements IOrder {
   })
   totalPrice!: number;
 
+  @Column()
+  quantity!: number;
+
   @Column({
     type: 'enum',
     enum: OrderStatusEnum,
@@ -48,14 +53,16 @@ export class Orders extends BaseEntity implements IOrder {
   status!: OrderStatusEnum;
 
   @Column({
+    type: "timestamp",
     nullable: true,
   })
-  expiredAt!: Date;
+  expiredAt!: Date | null;
 
   @Column({
+    type: "timestamp",
     nullable: true,
   })
-  paidAt!: Date;
+  paidAt!: Date | null;
 
   @OneToMany(() => Tickets, (ticket) => ticket.order)
   tickets!: Tickets[];

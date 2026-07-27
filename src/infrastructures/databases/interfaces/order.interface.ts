@@ -13,11 +13,12 @@ export interface IOrder extends IBaseEntity {
   event: IEvent;
 
   totalPrice: number;
+  quantity: number;
 
   status: OrderStatusEnum;
 
-  expiredAt: Date;
-  paidAt: Date;
+  expiredAt: Date | null;
+  paidAt: Date | null;
 
   tickets: ITicket[];
 }
