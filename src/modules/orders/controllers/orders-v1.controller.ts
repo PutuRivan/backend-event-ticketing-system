@@ -1,5 +1,5 @@
 import { OrdersV1Service } from './../services/orders-v1.service';
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Request } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { OrderPaginateV1Request } from '../dtos/requests/orders-paginate-v1.request';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
@@ -7,6 +7,8 @@ import { OrderV1Response } from '../dtos/responses/orders-v1.response';
 import { ordersCreateV1Request } from '../dtos/requests/orders-create-v1.request';
 import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
+import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
+import type { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
 
 @ApiTags('Orders')
 @Controller({ path: "orders", version: "1" })
@@ -16,25 +18,18 @@ export class OrdersV1Controller {
     private readonly ordersV1Service: OrdersV1Service
   ) { }
 
+  // ================================================
+  //                    ADMIN
+  //=================================================
   @Roles(RoleEnum.ADMIN)
   @Get('')
   async paginate(
-    @Param() paginationDto: OrderPaginateV1Request
+    @Query() paginationDto: OrderPaginateV1Request
   ): Promise<IPaginateData<OrderV1Response>> {
     return await this.ordersV1Service.paginate(paginationDto)
   }
 
-  @Roles(RoleEnum.USER)
-  @Post('')
-  async createOrder(
-    @Body() dataOrder: ordersCreateV1Request
-  ): Promise<OrderV1Response> {
-    const result = await this.ordersV1Service.createOrder(dataOrder)
-
-    return OrderV1Response.MapEntity(result)
-  }
-
-  @Roles(RoleEnum.ADMIN, RoleEnum.USER)
+  @Roles(RoleEnum.ADMIN)
   @Get(':orderId')
   async orderById(
     @Param('orderId') orderId: string
@@ -42,6 +37,52 @@ export class OrdersV1Controller {
     const data = await this.ordersV1Service.findOneById(orderId)
 
     return OrderV1Response.MapEntity(data)
+  }
+
+  // ================================================
+  //                    USER
+  //=================================================
+
+  @Roles(RoleEnum.USER)
+  @Get('me')
+  async getMyOrders(
+    @CurrentUser() user: IUser,
+    @Query() paginationDto: OrderPaginateV1Request,
+  ): Promise<IPaginateData<OrderV1Response>> {
+    const result = await this.ordersV1Service.paginateByUserId(
+      user.id,
+      paginationDto,
+    );
+
+    return {
+      meta: result.meta,
+      items: OrderV1Response.MapEntities(result.items),
+    };
+  }
+
+  @Roles(RoleEnum.USER)
+  @Get('me/:orderId')
+  async getMyOrderById(
+    @CurrentUser() user: IUser,
+    @Param('orderId') orderId: string,
+  ): Promise<OrderV1Response> {
+    const order = await this.ordersV1Service.findOneByIdAndUserId(
+      orderId,
+      user.id,
+    );
+
+    return OrderV1Response.MapEntity(order);
+  }
+
+  @Roles(RoleEnum.USER)
+  @Post('')
+  async createOrder(
+    @CurrentUser() user: IUser,
+    @Body() dataOrder: ordersCreateV1Request
+  ): Promise<OrderV1Response> {
+    const result = await this.ordersV1Service.createOrder(user.id, dataOrder)
+
+    return OrderV1Response.MapEntity(result)
   }
 
   @Roles(RoleEnum.USER)

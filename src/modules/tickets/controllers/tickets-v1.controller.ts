@@ -9,6 +9,9 @@ export class TicketsV1Controller {
     private readonly TicketsV1Service: TicketsV1Service
   ) { }
 
+  // ================================================
+  //                    ADMIN
+  //=================================================
   @Get('')
   async getAllTickets() { }
 

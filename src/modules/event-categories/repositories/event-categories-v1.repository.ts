@@ -6,6 +6,7 @@ import { IEventCategories } from "../../../infrastructures/databases/interfaces/
 import { EventCategoriesPaginateV1Request } from "../dtos/requests/event-categories-paginate-v1.request";
 import { PaginationUtil } from "../../../shared/utils/pagination.util";
 import { EventCategoriesCreateV1Request } from "../dtos/requests/event-categories-create-v1.request";
+import { QueryFilterUtil } from "../../../shared/utils/query-filter.util";
 
 @Injectable()
 export class EventCategoriesV1Repository extends Repository<EventCategories> {
@@ -17,7 +18,18 @@ export class EventCategoriesV1Repository extends Repository<EventCategories> {
   }
 
   async paginate(request: EventCategoriesPaginateV1Request) {
-    const query = this.createQueryBuilder()
+    const alias = this.metadata.name
+    const query = this.createQueryBuilder(this.metadata.name)
+
+    QueryFilterUtil.applyFilters(query, {
+      search: request.search
+        ? {
+          term: request.search,
+          fields: [
+            { name: `${alias}.name`, type: 'string' }
+          ]
+        } : null
+    })
 
     query.take(request.perPage)
     query.skip(PaginationUtil.countOffset(request))

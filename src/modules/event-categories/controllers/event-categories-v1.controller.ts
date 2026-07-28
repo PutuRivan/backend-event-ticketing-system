@@ -13,8 +13,13 @@ import { RoleEnum } from '../../../shared/enums/role.enum';
 @ApiTags('Event Categories')
 @Controller({ path: "event-categories", version: "1" })
 export class EventCategoriesV1Controller {
-  constructor(private readonly eventCategoriesV1Service: EventCategoriesV1Service) { }
+  constructor(
+    private readonly eventCategoriesV1Service: EventCategoriesV1Service
+  ) { }
 
+  // ================================================
+  //                    PUBLIC
+  //=================================================
   @Public()
   @Get('')
   async getAllEventCategories(
@@ -28,16 +33,6 @@ export class EventCategoriesV1Controller {
     }
   }
 
-  @Roles(RoleEnum.ADMIN)
-  @Post('')
-  async createEventCategories(
-    @Body() dataCategory: EventCategoriesCreateV1Request
-  ): Promise<EventCategoriesV1Response> {
-    const result = await this.eventCategoriesV1Service.createCategory(dataCategory)
-
-    return EventCategoriesV1Response.MapEntity(result)
-  }
-
   @Public()
   @Get(':categoryId')
   async getEventCategoriesById(
@@ -46,6 +41,19 @@ export class EventCategoriesV1Controller {
     const data = await this.eventCategoriesV1Service.findOneById(categoryId)
 
     return EventCategoriesV1Response.MapEntity(data)
+  }
+
+  // ================================================
+  //                    ADMIN
+  //=================================================
+  @Roles(RoleEnum.ADMIN)
+  @Post('')
+  async createEventCategories(
+    @Body() dataCategory: EventCategoriesCreateV1Request
+  ): Promise<EventCategoriesV1Response> {
+    const result = await this.eventCategoriesV1Service.createCategory(dataCategory)
+
+    return EventCategoriesV1Response.MapEntity(result)
   }
 
   @Roles(RoleEnum.ADMIN)

@@ -13,8 +13,13 @@ import { RoleEnum } from '../../../shared/enums/role.enum';
 @ApiTags('Event')
 @Controller({ path: "events", version: "1" })
 export class EventsV1Controller {
-  constructor(private readonly eventV1Service: EventV1Service) { }
+  constructor(
+    private readonly eventV1Service: EventV1Service
+  ) { }
 
+  // ================================================
+  //                    PUBLIC
+  //=================================================
   @Public()
   @Get('')
   async getAllEvent(
@@ -28,16 +33,6 @@ export class EventsV1Controller {
     }
   }
 
-  @Roles(RoleEnum.ADMIN)
-  @Post('')
-  async createEvent(
-    @Body() dataEvent: eventCreateV1Request
-  ): Promise<EventV1Response> {
-    const result = await this.eventV1Service.createEvent(dataEvent)
-
-    return EventV1Response.MapEntity(result)
-  }
-
   @Public()
   @Get(':eventId')
   async getEventById(
@@ -46,6 +41,19 @@ export class EventsV1Controller {
     const data = await this.eventV1Service.findOneById(eventId)
 
     return EventV1Response.MapEntity(data)
+  }
+
+  // ================================================
+  //                    ADMIN
+  //=================================================
+  @Roles(RoleEnum.ADMIN)
+  @Post('')
+  async createEvent(
+    @Body() dataEvent: eventCreateV1Request
+  ): Promise<EventV1Response> {
+    const result = await this.eventV1Service.createEvent(dataEvent)
+
+    return EventV1Response.MapEntity(result)
   }
 
   @Roles(RoleEnum.ADMIN)
@@ -69,6 +77,7 @@ export class EventsV1Controller {
     return null
   }
 
+  @Roles(RoleEnum.ADMIN)
   @Patch(':eventId/publish')
   async updateEventToPublish(
     @Param('eventId') eventId: string
@@ -78,6 +87,7 @@ export class EventsV1Controller {
     return EventV1Response.MapEntity(data)
   }
 
+  @Roles(RoleEnum.ADMIN)
   @Patch(':eventId/unpublish')
   async updateEventToUnpublish(
     @Param('eventId') eventId: string

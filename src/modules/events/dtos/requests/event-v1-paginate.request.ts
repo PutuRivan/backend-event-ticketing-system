@@ -3,8 +3,9 @@ import { PaginateSchema } from "../../../../shared/dtos/requests/paginate.reques
 import { ZodUtils } from "../../../../shared/utils/zod.util";
 
 export const eventPaginateV1Schema = PaginateSchema.extend({
-  name: z.string().optional(),
-  publish: z.boolean()
+  eventDate: z.string().datetime().optional(),
+  published: z.boolean().optional(),
+  categoryId: z.string().optional()
 })
 
 export class EventPaginateV1Request extends ZodUtils.createCamelCaseDto(

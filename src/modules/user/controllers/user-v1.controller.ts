@@ -11,18 +11,25 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { UserUpdateV1Request } from '../dtos/requests/user-update-v1.request';
 import { IPaginationData } from '../../../shared/interfaces/paginate-response.interface';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
+import { IJwtPayload } from '../../../infrastructures/modules/jwt/interfaces/jwt-payload.interface';
+import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
+import type { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
 
 @ApiTags('User')
 @Controller({ path: 'users', version: '1' })
 export class UserV1Controller {
   constructor(private readonly userV1Service: UserV1Service) { }
 
+  // ================================================
+  //                    ADMIN
+  //=================================================
   @Roles(RoleEnum.ADMIN)
   @Get()
   async getAllUsers(
@@ -46,7 +53,7 @@ export class UserV1Controller {
     return UserV1Response.MapEntity(data)
   }
 
-  @Roles(RoleEnum.USER)
+  @Roles(RoleEnum.ADMIN)
   @Patch(':userId')
   async updateById(
     @Param('userId') userId: string,
@@ -66,5 +73,30 @@ export class UserV1Controller {
 
     return null;
   }
+
+  // ================================================
+  //                    USER
+  //=================================================
+  @Roles(RoleEnum.USER)
+  @Get('me')
+  async getProfile(
+    @CurrentUser() user: IUser,
+  ): Promise<UserV1Response> {
+    const data = await this.userV1Service.findOneById(user.id);
+
+    return UserV1Response.MapEntity(data);
+  }
+
+  @Roles(RoleEnum.USER)
+  @Patch('me')
+  async updateProfile(
+    @CurrentUser() user: IUser,
+    @Body() dto: UserUpdateV1Request,
+  ): Promise<UserV1Response> {
+    const data = await this.userV1Service.updateById(user.id, dto);
+
+    return UserV1Response.MapEntity(data);
+  }
+
 
 }

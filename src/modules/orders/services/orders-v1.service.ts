@@ -13,6 +13,7 @@ import { config } from '../../../config';
 import { DateTimeUtil } from '../../../shared/utils/datetime.util';
 import { IQueueService } from '../../../infrastructures/modules/queue/interfaces/queue-service.interface';
 import { QueueFactoryService } from '../../../infrastructures/modules/queue/services/queue-factory.service';
+import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
 
 @Injectable()
 export class OrdersV1Service {
@@ -36,6 +37,7 @@ export class OrdersV1Service {
   }
 
   async createOrder(
+    userId: string,
     dataOrder: ordersCreateV1Request
   ): Promise<IOrder> {
     // Cek Event
@@ -63,7 +65,15 @@ export class OrdersV1Service {
       this.ORDER_EXPIRATION_DELAY_SECONDS
     );
 
-    const newOrder = await this.ordersV1Repository.createOrder(dataOrder, totalPrice, expiredAt)
+    const newOrder = await this.ordersV1Repository.createOrder(
+      {
+        userId,
+        eventId: dataOrder.eventId,
+        quantity: dataOrder.quantity,
+        totalPrice,
+        expiredAt
+      }
+    )
 
     await this.queueOrderService.sendToQueue(
       {
@@ -82,6 +92,32 @@ export class OrdersV1Service {
 
   async findOneById(id: string): Promise<IOrder> {
     return await this.ordersV1Repository.findOneById(id)
+  }
+
+  async findOneByIdAndUserId(
+    orderId: string,
+    userId: string,
+  ): Promise<IOrder> {
+    const order = await this.ordersV1Repository.findOneByIdAndUserId(
+      orderId,
+      userId,
+    );
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
+
+  async paginateByUserId(
+    userId: string,
+    paginationDto: OrderPaginateV1Request,
+  ): Promise<IPaginateData<IOrder>> {
+    return await this.ordersV1Repository.paginateByUserId(
+      userId,
+      paginationDto,
+    );
   }
 
   async paymentOrder(

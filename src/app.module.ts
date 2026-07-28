@@ -7,7 +7,7 @@ import { EventCategoriesModule } from './modules/event-categories/event-categori
 import { EventModule } from './modules/events/events.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { UserModule } from './modules/user/user.module';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { JwtAuthGuard } from './infrastructures/modules/jwt/guards/jwt-auth.guard';
 import { RoleGuard } from './infrastructures/modules/jwt/guards/permission.guard';
 import { QueueModule } from './infrastructures/modules/queue/queue.module';
@@ -16,6 +16,7 @@ import { config } from './config';
 import { DateTimeUtil } from './shared/utils/datetime.util';
 import { LogActivityInterceptor } from './infrastructures/interceptors/log-activity.interceptor';
 import { LogActivityModule } from './modules/log-activity/log-activity.module';
+import { ZodValidationPipe } from 'nestjs-zod';
 
 @Module({
   imports: [
@@ -60,6 +61,10 @@ import { LogActivityModule } from './modules/log-activity/log-activity.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: LogActivityInterceptor,
+    },
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
     },
   ],
 })
