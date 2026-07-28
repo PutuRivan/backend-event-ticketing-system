@@ -1,9 +1,10 @@
 import { BullModule, RegisterQueueOptions } from '@nestjs/bullmq';
 import { forwardRef, Module } from '@nestjs/common';
 import { config } from '../../../config';
-import { QueueName } from './constants/queue.contant';
+import { QueueName } from './constants/queue.constant';
 import { QueueOrderProcessor } from './processors/queue-orders.processor';
 import { OrdersModule } from '../../../modules/orders/orders.module';
+import { QueueFactoryService } from './services/queue-factory.service';
 
 
 @Module({
@@ -17,10 +18,12 @@ import { OrdersModule } from '../../../modules/orders/orders.module';
     forwardRef(() => OrdersModule)
   ],
   providers: [
-    QueueOrderProcessor
+    QueueOrderProcessor,
+    QueueFactoryService,
   ],
   exports: [
-    BullModule
+    BullModule,
+    QueueFactoryService
   ]
 })
 export class QueueModule { }

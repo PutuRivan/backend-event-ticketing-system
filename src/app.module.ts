@@ -13,6 +13,7 @@ import { RoleGuard } from './infrastructures/modules/jwt/guards/permission.guard
 import { QueueModule } from './infrastructures/modules/queue/queue.module';
 import { BullModule } from '@nestjs/bullmq';
 import { config } from './config';
+import { DateTimeUtil } from './shared/utils/datetime.util';
 
 @Module({
   imports: [
@@ -21,6 +22,18 @@ import { config } from './config';
       connection: {
         host: config.redis.host,
         port: config.redis.port,
+      },
+      prefix: `${config.app.name}:${config.nodeEnv}:bull`,
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: false,
+        attempts: config.queue.retryAttempts,
+        backoff: {
+          type: 'exponential',
+          delay: DateTimeUtil.convertSecondsToMilliseconds(
+            config.queue.backoffDelayInSeconds
+          )
+        }
       }
     }),
     AuthModule,

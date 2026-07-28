@@ -50,4 +50,11 @@ export const config = {
     host: process.env.REDIS_HOST || '',
     port: +(process.env.REDIS_PORT || 6379),
   },
+  queue: {
+    backoffDelayInSeconds: +(
+      process.env.QUEUE_BACKOFF_DELAY_IN_SECONDS || 5
+    ), // 5 seconds
+    retryAttempts: +(process.env.QUEUE_RETRY_ATTEMPTS || 3), // 3 attempts
+    orderExpirationDelaySeconds: +(process.env.QUEUE_EXPIRE_ORDER_IN_SECONDS || 900), // 900 seconds
+  }
 }

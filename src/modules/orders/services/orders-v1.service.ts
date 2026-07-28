@@ -7,19 +7,29 @@ import { ordersCreateV1Request } from '../dtos/requests/orders-create-v1.request
 import { OrderStatusEnum } from '../../../shared/enums/order-status.enum';
 import { TicketsV1Service } from '../../tickets/services/tickets-v1.service';
 import { InjectQueue } from '@nestjs/bullmq';
-import { QueueName, QueueOrderJob } from '../../../infrastructures/modules/queue/constants/queue.contant';
+import { QueueName, QueueOrderJob } from '../../../infrastructures/modules/queue/constants/queue.constant';
 import { Queue } from 'bullmq';
+import { config } from '../../../config';
+import { DateTimeUtil } from '../../../shared/utils/datetime.util';
+import { IQueueService } from '../../../infrastructures/modules/queue/interfaces/queue-service.interface';
+import { QueueFactoryService } from '../../../infrastructures/modules/queue/services/queue-factory.service';
 
 @Injectable()
 export class OrdersV1Service {
+  private queueOrderService: IQueueService
+
   constructor(
     private readonly ordersV1Repository: OrdersV1Repository,
     private readonly eventV1Repository: EventV1Repository,
     private readonly ticketsV1Service: TicketsV1Service,
+    private readonly queueFactoryService: QueueFactoryService,
+  ) {
+    this.queueOrderService = this.queueFactoryService.createQueueService(
+      QueueName.Order,
+    );
+  }
 
-    @InjectQueue(QueueName.Order)
-    private readonly orderQueue: Queue,
-  ) { }
+  private readonly ORDER_EXPIRATION_DELAY_SECONDS = config.queue.orderExpirationDelaySeconds
 
   async paginate(paginationDto: OrderPaginateV1Request) {
     return await this.ordersV1Repository.paginate(paginationDto)
@@ -48,20 +58,22 @@ export class OrdersV1Service {
     }
 
     const totalPrice = event.ticketPrice * dataOrder.quantity
-    const expiredAt = new Date(
-      Date.now() + 15 * 60 * 1000
+    const expiredAt = DateTimeUtil.addSeconds(
+      new Date(),
+      this.ORDER_EXPIRATION_DELAY_SECONDS
     );
 
     const newOrder = await this.ordersV1Repository.createOrder(dataOrder, totalPrice, expiredAt)
 
-    await this.orderQueue.add(
-      QueueOrderJob.ExpireOrder,
+    await this.queueOrderService.sendToQueue(
       {
         orderId: newOrder.id
       },
+      QueueOrderJob.ExpireOrder,
       {
-        delay: 15 * 60 * 1000,
-        attempts: 3,
+        delay: DateTimeUtil.convertSecondsToMilliseconds(
+          this.ORDER_EXPIRATION_DELAY_SECONDS
+        )
       }
     );
 
@@ -124,8 +136,6 @@ export class OrdersV1Service {
   async expireOrder(
     idOrder: string
   ): Promise<void> {
-
-
     const order =
       await this.ordersV1Repository.findOneById(
         idOrder

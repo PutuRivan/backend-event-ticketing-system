@@ -1,5 +1,5 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { QueueName, QueueOrderJob } from "../constants/queue.contant";
+import { QueueName, QueueOrderJob } from "../constants/queue.constant";
 import { OrdersV1Service } from "../../../../modules/orders/services/orders-v1.service";
 import { Job } from "bullmq";
 
@@ -11,24 +11,27 @@ export class QueueOrderProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job) {
+  async process(job: Job): Promise<void> {
+    try {
+      const jobName = job.name
+      switch (job.name) {
 
-    switch (job.name) {
-
-      case QueueOrderJob.ExpireOrder:
-
-        await this.ordersService.expireOrder(
-          job.data.orderId
-        );
-
-        break;
+        case QueueOrderJob.ExpireOrder:
+          await this.ordersService.expireOrder(
+            job.data.orderId
+          );
+          break;
 
 
-      default:
-        throw new Error(
-          `Unknown job ${job.name}`
-        );
+        default:
+          throw new Error(
+            `Unknown job ${job.name}`
+          );
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to process job: ${error.message}`);
     }
+
 
   }
 
