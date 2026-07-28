@@ -4,6 +4,7 @@ import { Queue } from 'bullmq';
 import { QueueName, TQueueName } from '../constants/queue.constant';
 import { IQueueService } from '../interfaces/queue-service.interface';
 import { QueueOrderService } from './queue-orders.service';
+import { QueueLogActivityService } from './queue-log-activity.service';
 
 @Injectable()
 export class QueueFactoryService {
@@ -11,12 +12,11 @@ export class QueueFactoryService {
         // @InjectQueue(QueueName.Mail)
         // private readonly queueMail: Queue,
 
-        // @InjectQueue(QueueName.LogActivity)
-        // private readonly queueLogActivity: Queue,
+        @InjectQueue(QueueName.LogActivity)
+        private readonly queueLogActivity: Queue,
 
         @InjectQueue(QueueName.Order)
         private readonly queueOrder: Queue
-        // TODO: Inject your other queues here
     ) { }
 
     createQueueService(queueName: TQueueName): IQueueService {
@@ -24,13 +24,12 @@ export class QueueFactoryService {
             // case QueueName.Mail: {
             //     return new QueueMailService(this.queueMail);
             // }
-            // case QueueName.LogActivity: {
-            //     return new QueueLogActivityService(this.queueLogActivity);
-            // }
+            case QueueName.LogActivity: {
+                return new QueueLogActivityService(this.queueLogActivity);
+            }
             case QueueName.Order: {
                 return new QueueOrderService(this.queueOrder)
             }
-            // TODO: Add other queue services here
             default: {
                 throw new Error(
                     `Queue with name ${queueName} is not supported.`,

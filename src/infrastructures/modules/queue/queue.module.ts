@@ -5,6 +5,8 @@ import { QueueName } from './constants/queue.constant';
 import { QueueOrderProcessor } from './processors/queue-orders.processor';
 import { OrdersModule } from '../../../modules/orders/orders.module';
 import { QueueFactoryService } from './services/queue-factory.service';
+import { LogActivityModule } from '../../../modules/log-activity/log-activity.module';
+import { QueueLogActivityProcessor } from './processors/queue-log-activity.processor';
 
 
 @Module({
@@ -15,10 +17,12 @@ import { QueueFactoryService } from './services/queue-factory.service';
       })),
     ),
 
-    forwardRef(() => OrdersModule)
+    forwardRef(() => OrdersModule),
+    LogActivityModule
   ],
   providers: [
     QueueOrderProcessor,
+    QueueLogActivityProcessor,
     QueueFactoryService,
   ],
   exports: [

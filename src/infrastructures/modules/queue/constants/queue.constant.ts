@@ -10,4 +10,10 @@ export const QueueOrderJob = {
 export type TQueueOrderJob =
   typeof QueueOrderJob[keyof typeof QueueOrderJob];
 
-export type TQueueJob = TQueueOrderJob
+export const QueueLogActivityJob = {
+  LogActivityCreate: 'log-activity-create',
+} as const;
+export type TQueueLogActivityJob =
+  (typeof QueueLogActivityJob)[keyof typeof QueueLogActivityJob];
+
+export type TQueueJob = TQueueOrderJob | TQueueLogActivityJob
