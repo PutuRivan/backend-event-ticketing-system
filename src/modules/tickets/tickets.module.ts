@@ -5,6 +5,7 @@ import { TicketsV1Service } from './services/tickets-v1.service';
 import { Tickets } from '../../infrastructures/databases/entities/tickets.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { QueueModule } from '../../infrastructures/modules/queue/queue.module';
+import { StorageModule } from '../../infrastructures/modules/storage/storage.module';
 
 @Module({
   imports: [
@@ -12,8 +13,8 @@ import { QueueModule } from '../../infrastructures/modules/queue/queue.module';
       Tickets
     ]),
 
-    forwardRef(() => QueueModule)
-
+    forwardRef(() => QueueModule),
+    StorageModule
   ],
   controllers: [
     TicketsV1Controller

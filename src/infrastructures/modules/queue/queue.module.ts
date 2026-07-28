@@ -32,9 +32,6 @@ import { QueueLogActivityService } from './services/queue-log-activity.service';
     QueueLogActivityProcessor,
 
     QueueFactoryService,
-    QueueOrderService,
-    QueueTicketService,
-    QueueLogActivityService
   ],
   exports: [
     BullModule,

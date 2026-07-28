@@ -1,0 +1,83 @@
+import { Injectable } from "@nestjs/common";
+import { IStorageService } from "../interfaces/storage.interface";
+import { config } from "../../../../config";
+import { mkdir, readFile, writeFile } from "fs/promises";
+import path from "path";
+
+@Injectable()
+export class StorageLocalService implements IStorageService {
+
+  private readonly rootPath = config.storage.rootPath;
+
+
+  async uploadToStorage<T>(
+    data: T
+  ): Promise<string> {
+
+    const {
+      folder,
+      filename,
+      buffer
+    } = data as {
+      folder: string;
+      filename: string;
+      buffer: Buffer;
+    };
+
+
+    const folderPath =
+      path.join(
+        this.rootPath,
+        folder
+      );
+
+
+    await mkdir(
+      folderPath,
+      {
+        recursive: true
+      }
+    );
+
+
+    const filePath =
+      path.join(
+        folderPath,
+        filename
+      );
+
+
+    await writeFile(
+      filePath,
+      buffer
+    );
+
+
+    return filePath;
+  }
+
+
+  async getFromStorage<T>(
+    data: T
+  ): Promise<Buffer> {
+
+    const {
+      folder,
+      filename
+    } = data as {
+      folder: string;
+      filename: string;
+    };
+
+
+    const filePath =
+      path.join(
+        this.rootPath,
+        folder,
+        filename
+      );
+
+
+    return readFile(filePath);
+  }
+}

@@ -7,18 +7,29 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { IQueueService } from "../../../infrastructures/modules/queue/interfaces/queue-service.interface";
 import { QueueFactoryService } from "../../../infrastructures/modules/queue/services/queue-factory.service";
+import { StorageLocalService } from "../../../infrastructures/modules/storage/services/storage-local.service";
+import { IStorageService } from "../../../infrastructures/modules/storage/interfaces/storage.interface";
+import { StorageDriver } from "../../../infrastructures/modules/storage/constant/storage.constant";
+import { StorageFactoryService } from "../../../infrastructures/modules/storage/services/storage-factory.service";
 
 @Injectable()
 export class TicketsV1Service {
   private queueTicketsService: IQueueService
+  private storageService: IStorageService;
 
   constructor(
     private readonly ticketV1Repository: TicketsV1Repository,
     private readonly queueFactoryService: QueueFactoryService,
+    private readonly storageFactoryService: StorageFactoryService
   ) {
     this.queueTicketsService = this.queueFactoryService.createQueueService(
       QueueName.Tickets
     )
+
+    this.storageService =
+      this.storageFactoryService.createStorageService(
+        StorageDriver.Local
+      );
   }
 
   private generateTicketNumber() {
@@ -30,14 +41,17 @@ export class TicketsV1Service {
 
   async generateQRCode(ticketNumber: string) {
 
-    const path = `storage/qrcode/${ticketNumber}.png`;
+    const buffer =
+      await QRCode.toBuffer(
+        ticketNumber
+      );
 
-    await QRCode.toFile(
-      path,
-      ticketNumber
-    );
 
-    return path;
+    return this.storageService.uploadToStorage({
+      folder: "qrcode",
+      filename: `${ticketNumber}.png`,
+      buffer
+    });
   }
 
   async createTicket(orderId: string) {

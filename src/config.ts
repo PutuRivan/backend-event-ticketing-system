@@ -29,7 +29,7 @@ export const config = {
   },
   storage: {
     driver: process.env.STORAGE_DRIVER || 'local',
-    rootPath: process.env.STORAGE_ROOT_PATH || 'storages',
+    rootPath: process.env.STORAGE_ROOT_PATH || 'storage',
     fileMaxSizeInBytes: +(
       process.env.STORAGE_FILE_MAX_SIZE_IN_BYTES || 10485760
     ), // 10 MB
