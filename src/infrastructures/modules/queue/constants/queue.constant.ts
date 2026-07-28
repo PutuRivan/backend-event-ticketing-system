@@ -1,6 +1,7 @@
 export const QueueName = {
-  Order: 'order',
-  LogActivity: 'log-activity'
+  Orders: 'orders',
+  Tickets: 'tickets',
+  LogActivity: 'log-activity',
 } as const;
 export type TQueueName = typeof QueueName[keyof typeof QueueName]
 
@@ -10,10 +11,15 @@ export const QueueOrderJob = {
 export type TQueueOrderJob =
   typeof QueueOrderJob[keyof typeof QueueOrderJob];
 
+export const QueueTicketJob = {
+  GenerateQrCode: 'generate-qr',
+} as const
+export type TQueueTicketJob = typeof QueueTicketJob[keyof typeof QueueTicketJob]
+
 export const QueueLogActivityJob = {
   LogActivityCreate: 'log-activity-create',
 } as const;
 export type TQueueLogActivityJob =
   (typeof QueueLogActivityJob)[keyof typeof QueueLogActivityJob];
 
-export type TQueueJob = TQueueOrderJob | TQueueLogActivityJob
+export type TQueueJob = TQueueOrderJob | TQueueTicketJob | TQueueLogActivityJob

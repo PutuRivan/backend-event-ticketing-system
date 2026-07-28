@@ -17,9 +17,9 @@ import { QueueModule } from '../../infrastructures/modules/queue/queue.module';
       EventCategories,
       Events,
     ]),
-    TicketsModule,
+    forwardRef(() => TicketsModule),
+    forwardRef(() => QueueModule),
 
-    forwardRef(() => QueueModule)
   ],
   controllers: [
     OrdersV1Controller,

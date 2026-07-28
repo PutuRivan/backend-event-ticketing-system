@@ -1,19 +1,19 @@
-import { InjectQueue } from '@nestjs/bullmq';
-import { QueueName, TQueueOrderJob } from '../constants/queue.constant';
 import { Injectable } from "@nestjs/common";
-import { JobsOptions, Queue } from 'bullmq';
-import { IQueueService } from '../interfaces/queue-service.interface';
+import { IQueueService } from "../interfaces/queue-service.interface";
+import { InjectQueue } from "@nestjs/bullmq";
+import { QueueName, TQueueTicketJob } from "../constants/queue.constant";
+import { JobsOptions, Queue } from "bullmq";
 
 @Injectable()
-export class QueueOrderService implements IQueueService {
+export class QueueTicketService implements IQueueService {
   constructor(
-    @InjectQueue(QueueName.Orders)
+    @InjectQueue(QueueName.Tickets)
     private readonly queue: Queue
   ) { }
 
   async sendToQueue<T>(
     data: T,
-    jobName: TQueueOrderJob,
+    jobName: TQueueTicketJob,
     opts?: JobsOptions
   ): Promise<void> {
     try {
@@ -21,7 +21,5 @@ export class QueueOrderService implements IQueueService {
     } catch (error: any) {
       throw new Error(`Failed to add job to the queue: ${error.message}`);
     }
-
-
   }
 }

@@ -5,6 +5,7 @@ import { QueueName, TQueueName } from '../constants/queue.constant';
 import { IQueueService } from '../interfaces/queue-service.interface';
 import { QueueOrderService } from './queue-orders.service';
 import { QueueLogActivityService } from './queue-log-activity.service';
+import { QueueTicketService } from './queue-generate-qr.service';
 
 @Injectable()
 export class QueueFactoryService {
@@ -15,8 +16,11 @@ export class QueueFactoryService {
         @InjectQueue(QueueName.LogActivity)
         private readonly queueLogActivity: Queue,
 
-        @InjectQueue(QueueName.Order)
-        private readonly queueOrder: Queue
+        @InjectQueue(QueueName.Orders)
+        private readonly queueOrders: Queue,
+
+        @InjectQueue(QueueName.Tickets)
+        private readonly queueTickets: Queue
     ) { }
 
     createQueueService(queueName: TQueueName): IQueueService {
@@ -27,8 +31,11 @@ export class QueueFactoryService {
             case QueueName.LogActivity: {
                 return new QueueLogActivityService(this.queueLogActivity);
             }
-            case QueueName.Order: {
-                return new QueueOrderService(this.queueOrder)
+            case QueueName.Orders: {
+                return new QueueOrderService(this.queueOrders)
+            }
+            case QueueName.Tickets: {
+                return new QueueTicketService(this.queueTickets)
             }
             default: {
                 throw new Error(

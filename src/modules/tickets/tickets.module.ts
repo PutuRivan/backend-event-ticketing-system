@@ -1,15 +1,19 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TicketsV1Controller } from './controllers/tickets-v1.controller';
 import { TicketsV1Repository } from './repositories/tickets-v1.repository';
 import { TicketsV1Service } from './services/tickets-v1.service';
 import { Tickets } from '../../infrastructures/databases/entities/tickets.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { QueueModule } from '../../infrastructures/modules/queue/queue.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Tickets
     ]),
+
+    forwardRef(() => QueueModule)
+
   ],
   controllers: [
     TicketsV1Controller

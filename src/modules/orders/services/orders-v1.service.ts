@@ -25,7 +25,7 @@ export class OrdersV1Service {
     private readonly queueFactoryService: QueueFactoryService,
   ) {
     this.queueOrderService = this.queueFactoryService.createQueueService(
-      QueueName.Order,
+      QueueName.Orders,
     );
   }
 

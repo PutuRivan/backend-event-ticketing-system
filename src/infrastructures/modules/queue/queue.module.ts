@@ -7,6 +7,11 @@ import { OrdersModule } from '../../../modules/orders/orders.module';
 import { QueueFactoryService } from './services/queue-factory.service';
 import { LogActivityModule } from '../../../modules/log-activity/log-activity.module';
 import { QueueLogActivityProcessor } from './processors/queue-log-activity.processor';
+import { QueueTicketProcessor } from './processors/queue-tickets.processor';
+import { TicketsModule } from '../../../modules/tickets/tickets.module';
+import { QueueOrderService } from './services/queue-orders.service';
+import { QueueTicketService } from './services/queue-generate-qr.service';
+import { QueueLogActivityService } from './services/queue-log-activity.service';
 
 
 @Module({
@@ -18,12 +23,18 @@ import { QueueLogActivityProcessor } from './processors/queue-log-activity.proce
     ),
 
     forwardRef(() => OrdersModule),
-    LogActivityModule
+    forwardRef(() => TicketsModule),
+    LogActivityModule,
   ],
   providers: [
     QueueOrderProcessor,
+    QueueTicketProcessor,
     QueueLogActivityProcessor,
+
     QueueFactoryService,
+    QueueOrderService,
+    QueueTicketService,
+    QueueLogActivityService
   ],
   exports: [
     BullModule,

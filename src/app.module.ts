@@ -27,7 +27,7 @@ import { LogActivityModule } from './modules/log-activity/log-activity.module';
       },
       prefix: `${config.app.name}:${config.nodeEnv}:bull`,
       defaultJobOptions: {
-        removeOnComplete: true,
+        removeOnComplete: false,
         removeOnFail: false,
         attempts: config.queue.retryAttempts,
         backoff: {

@@ -3,7 +3,7 @@ import { QueueName, QueueOrderJob } from "../constants/queue.constant";
 import { OrdersV1Service } from "../../../../modules/orders/services/orders-v1.service";
 import { Job } from "bullmq";
 
-@Processor(QueueName.Order)
+@Processor(QueueName.Orders)
 export class QueueOrderProcessor extends WorkerHost {
   constructor(
     private readonly ordersService: OrdersV1Service
@@ -14,7 +14,8 @@ export class QueueOrderProcessor extends WorkerHost {
   async process(job: Job): Promise<void> {
     try {
       const jobName = job.name
-      switch (job.name) {
+
+      switch (jobName) {
 
         case QueueOrderJob.ExpireOrder:
           await this.ordersService.expireOrder(
@@ -25,7 +26,7 @@ export class QueueOrderProcessor extends WorkerHost {
 
         default:
           throw new Error(
-            `Unknown job ${job.name}`
+            `Unknown job ${jobName}`
           );
       }
     } catch (error: any) {
