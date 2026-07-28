@@ -1,11 +1,21 @@
 export interface IStorageService {
 
-  uploadToStorage<T>(
-    data: T
+  uploadToStorage(
+    data: IStorageUploadRequest
   ): Promise<string>;
 
-  getFromStorage<T>(
-    data: T
-  ): Promise<Buffer>;
 
+  getFromStorage(
+    data: IStorageGetRequest
+  ): Promise<Buffer>;
+}
+
+export interface IStorageUploadRequest {
+  folder: string;
+  filename: string;
+  buffer: Buffer;
+}
+
+export interface IStorageGetRequest {
+  path: string;
 }
