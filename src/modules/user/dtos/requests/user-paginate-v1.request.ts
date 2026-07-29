@@ -4,8 +4,7 @@ import { PaginateSchema } from '../../../../shared/dtos/requests/paginate.reques
 import { ZodUtils } from '../../../../shared/utils/zod.util';
 
 export const UserPaginateV1Schema = PaginateSchema.extend({
-    email: z.boolean().optional(),
-    role:z.enum(RoleEnum)
+    role: z.enum(RoleEnum).optional()
 });
 
 export class UserPaginateV1Request extends ZodUtils.createCamelCaseDto(

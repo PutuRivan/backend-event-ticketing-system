@@ -64,7 +64,7 @@ export class UserV1Controller {
     return UserV1Response.MapEntity(data);
   }
 
-  @Roles(RoleEnum.USER)
+  @Roles(RoleEnum.ADMIN)
   @Delete(':userId')
   async deleteById(
     @Param('userId') userId: string
@@ -73,30 +73,4 @@ export class UserV1Controller {
 
     return null;
   }
-
-  // ================================================
-  //                    USER
-  //=================================================
-  @Roles(RoleEnum.USER)
-  @Get('me')
-  async getProfile(
-    @CurrentUser() user: IUser,
-  ): Promise<UserV1Response> {
-    const data = await this.userV1Service.findOneById(user.id);
-
-    return UserV1Response.MapEntity(data);
-  }
-
-  @Roles(RoleEnum.USER)
-  @Patch('me')
-  async updateProfile(
-    @CurrentUser() user: IUser,
-    @Body() dto: UserUpdateV1Request,
-  ): Promise<UserV1Response> {
-    const data = await this.userV1Service.updateById(user.id, dto);
-
-    return UserV1Response.MapEntity(data);
-  }
-
-
 }

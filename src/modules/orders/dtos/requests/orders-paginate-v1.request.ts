@@ -4,7 +4,9 @@ import { OrderStatusEnum } from "../../../../shared/enums/order-status.enum";
 import { ZodUtils } from "../../../../shared/utils/zod.util";
 
 export const orderPaginateV1Schema = PaginateSchema.extend({
-  status: z.enum(OrderStatusEnum).default(OrderStatusEnum.PAID)
+  status: z.enum(OrderStatusEnum).default(OrderStatusEnum.PAID),
+  eventId: z.string().optional(),
+  userId: z.string().optional()
 })
 
 export class OrderPaginateV1Request extends ZodUtils.createCamelCaseDto(

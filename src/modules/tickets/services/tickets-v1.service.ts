@@ -11,6 +11,10 @@ import { StorageLocalService } from "../../../infrastructures/modules/storage/se
 import { IStorageService } from "../../../infrastructures/modules/storage/interfaces/storage.interface";
 import { StorageDriver } from "../../../infrastructures/modules/storage/constant/storage.constant";
 import { StorageFactoryService } from "../../../infrastructures/modules/storage/services/storage-factory.service";
+import { TicketPaginateV1Request } from "../dtos/requests/tickets-paginate-v1.request";
+import { IPaginateData } from "../../../shared/interfaces/paginate-response.interface";
+import { TicketV1Response } from "../dtos/responses/tickets-v1.response";
+import { ITicket } from "../../../infrastructures/databases/interfaces/ticket.interface";
 
 @Injectable()
 export class TicketsV1Service {
@@ -52,6 +56,16 @@ export class TicketsV1Service {
       filename: `${ticketNumber}.png`,
       buffer
     });
+  }
+
+  async paginate(
+    paginationDTO: TicketPaginateV1Request
+  ): Promise<IPaginateData<ITicket>> {
+    return this.ticketV1Repository.paginate(paginationDTO)
+  }
+
+  async findOneByID(id: string): Promise<ITicket> {
+    return await this.ticketV1Repository.findOneById(id)
   }
 
   async createTicket(orderId: string) {

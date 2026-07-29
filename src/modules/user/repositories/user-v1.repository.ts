@@ -20,7 +20,9 @@ export class UserV1Repository extends Repository<IUser> {
   async paginate(request: UserPaginateV1Request) {
     const alias = this.metadata.name
     const ALLOWED_SORTS = new Map<string, string>([
-      ['role', `${alias}.role`],
+      ['updated_at', `${alias}.updatedAt`],
+      ['created_at', `${alias}.createdAt`],
+      ['deleted_at', `${alias}.deletedAt`]
     ]);
 
     const query = this.createQueryBuilder(this.metadata.name)
@@ -33,7 +35,13 @@ export class UserV1Repository extends Repository<IUser> {
           { name: `${alias}.name`, type: 'string' },
           { name: `${alias}.email`, type: 'string' },
         ]
-      } : null
+      } : null,
+      filters: [
+        {
+          field: `${alias}.role`,
+          value: request.role
+        }
+      ]
     })
 
     QuerySortingUtil.applySorting(query,
@@ -56,10 +64,14 @@ export class UserV1Repository extends Repository<IUser> {
     };
   }
 
-  async findOneById(id: string): Promise<IUser> {
-    return await this.findOneOrFail({
-      where: { id },
-    })
+  async findOneById(id: string): Promise<IUser | null> {
+    const alias = this.metadata.name
+    const query = this.createQueryBuilder(this.metadata.name)
+      .leftJoinAndSelect(`${alias}.orders`, 'orders')
+      .where(`${alias}.id = :id`, { id })
+      .getOne();
+
+    return query
   }
 
   async findOneByEmail(email: string): Promise<IUser | null> {

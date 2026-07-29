@@ -10,6 +10,8 @@ import { ordersCreateV1Request } from "../dtos/requests/orders-create-v1.request
 import { ICreateOrder } from "../interfaces/create-order.interface";
 import { IPaginateData } from "../../../shared/interfaces/paginate-response.interface";
 import { PaginateOrderEnum } from "../../../shared/enums/paginate-order.enum";
+import { QueryFilterUtil } from "../../../shared/utils/query-filter.util";
+import { QuerySortingUtil } from "../../../shared/utils/query-sort.util";
 
 @Injectable()
 export class OrdersV1Repository extends Repository<IOrder> {
@@ -21,7 +23,42 @@ export class OrdersV1Repository extends Repository<IOrder> {
   }
 
   async paginate(request: OrderPaginateV1Request) {
-    const query = this.createQueryBuilder()
+    const alias = this.metadata.name
+    const ALLOWED_SORT = new Map<string, string>([
+      ['created_at', `${alias}.createedAt`],
+      ['deleted_at', `${alias}.deletedAt`],
+      ['updated_at', `${alias}.updatedAt`]
+    ])
+
+    const query = this
+      .createQueryBuilder(this.metadata.name)
+      .leftJoinAndSelect(`${alias}.tickets`, 'tickets')
+      .leftJoinAndSelect(`${alias}.events`, 'events')
+
+    QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORT)
+
+    QueryFilterUtil.applyFilters(query, {
+      filters: [
+        {
+          field: `${alias}.status`,
+          value: request.status
+        },
+        {
+          field: `${alias}.eventId`,
+          value: request.eventId
+        },
+        {
+          field: `${alias}.userId`,
+          value: request.userId
+        }
+      ]
+    })
+
+    QuerySortingUtil.applySorting(query, {
+      sort: request.sort,
+      order: request.order,
+      allowedSorts: ALLOWED_SORT
+    })
 
     query.take(request.perPage)
     query.skip(PaginationUtil.countOffset(request))
@@ -43,19 +80,30 @@ export class OrdersV1Repository extends Repository<IOrder> {
   }
 
   async getTotalReservedTicket(eventId: string): Promise<number> {
-    const result = await this
-      .createQueryBuilder("order")
-      .select("COALESCE(SUM(order.quantity), 0)", "total")
-      .where("order.eventId = :eventId", { eventId })
-      .andWhere("order.status IN (:...statuses)", {
-        statuses: [
-          OrderStatusEnum.PENDING,
-          OrderStatusEnum.PAID,
-        ],
-      })
-      .getRawOne();
+    const alias = this.metadata.name
+    const query = this.createQueryBuilder(this.metadata.name)
+      .select('COALESCE(SUM(order.quantity), 0)', 'total');
 
-    return Number(result.total);
+    QueryFilterUtil.applyFilters(query, {
+      filters: [
+        {
+          field: `${alias}.eventId}`,
+          value: eventId,
+        },
+        {
+          field: `${alias}.status`,
+          value: [
+            OrderStatusEnum.PENDING,
+            OrderStatusEnum.PAID,
+          ],
+          operator: 'in',
+        },
+      ],
+    });
+
+    const result = await query.getRawOne<{ total: string }>();
+
+    return Number(result?.total);
   }
 
   async createOrder(
@@ -85,43 +133,4 @@ export class OrdersV1Repository extends Repository<IOrder> {
     });
   }
 
-  async paginateByUserId(
-    userId: string,
-    paginationDto: OrderPaginateV1Request,
-  ): Promise<IPaginateData<IOrder>> {
-    const {
-      page = 1,
-      perPage = 10,
-      search,
-      sort = 'updated_at',
-      order = PaginateOrderEnum.DESC,
-    } = paginationDto;
-
-    const qb = this.createQueryBuilder('orders')
-      .leftJoinAndSelect('orders.event', 'event')
-      .where('orders.userId = :userId', { userId });
-
-    if (search) {
-      qb.andWhere('event.title ILIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
-    qb
-      .orderBy(`orders.${sort}`, order)
-      .skip((page - 1) * perPage)
-      .take(perPage);
-
-    const [items, total] = await qb.getManyAndCount();
-
-    return {
-      items,
-      meta: {
-        page,
-        perPage,
-        total,
-        totalPage: Math.ceil(total / perPage),
-      },
-    };
-  }
 }

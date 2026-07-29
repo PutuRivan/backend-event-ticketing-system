@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from '../../infrastructures/databases/entities/users.entity';
 import { UserTokenV1Repository } from './repositories/user-token-v1.repository';
 import { UserToken } from '../../infrastructures/databases/entities/user-token.entity';
+import { UserProfileV1Controller } from './controllers/user-profile-v1.controller';
 
 @Module({
   imports: [
@@ -14,7 +15,10 @@ import { UserToken } from '../../infrastructures/databases/entities/user-token.e
       UserToken,
     ]),
   ],
-  controllers: [UserV1Controller,],
+  controllers: [
+    UserProfileV1Controller,
+    UserV1Controller,
+  ],
   providers: [
     // Repositories
     UserV1Repository,

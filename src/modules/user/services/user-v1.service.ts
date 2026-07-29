@@ -4,6 +4,7 @@ import { UserPaginateV1Request } from "../dtos/requests/user-paginate-v1.request
 import { UserV1Repository } from '../repositories/user-v1.repository';
 import { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
 import { UserUpdateV1Request } from '../dtos/requests/user-update-v1.request';
+import { UserProfileUpdateV1Request } from '../dtos/requests/user-profile-update-v1.request';
 
 @Injectable()
 export class UserV1Service {
@@ -16,7 +17,13 @@ export class UserV1Service {
   }
 
   async findOneById(id: string): Promise<IUser> {
-    return await this.userV1Repository.findOneById(id)
+    const user = await this.userV1Repository.findOneById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
   async updateById(
@@ -43,6 +50,27 @@ export class UserV1Service {
       user.role = dataUpdate.role;
     }
 
+
+    return await this.userV1Repository.updateUser(user);
+  }
+
+  async updateProfile(
+    id: string,
+    dataUpdate: UserProfileUpdateV1Request
+  ): Promise<IUser> {
+    const user = await this.findOneById(id);
+
+    if (!user) {
+      throw new NotFoundException('User Not Found');
+    }
+
+    if (dataUpdate.name !== undefined) {
+      user.name = dataUpdate.name;
+    }
+
+    if (dataUpdate.email !== undefined) {
+      user.email = dataUpdate.email;
+    }
 
     return await this.userV1Repository.updateUser(user);
   }

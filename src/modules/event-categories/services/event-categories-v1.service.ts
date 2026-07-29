@@ -9,26 +9,26 @@ import { eventCategoriesUpdateV1Request } from '../dtos/requests/event-categorie
 @Injectable()
 export class EventCategoriesV1Service {
   constructor(
-    private readonly EventCategoriesV1Repository: EventCategoriesV1Repository
+    private readonly eventCategoriesV1Repository: EventCategoriesV1Repository
   ) { }
 
   async paginate(paginationDto: EventCategoriesPaginateV1Request) {
-    return await this.EventCategoriesV1Repository.paginate(paginationDto)
+    return await this.eventCategoriesV1Repository.paginate(paginationDto)
   }
 
   async findOneById(id: string): Promise<IEventCategories> {
-    return await this.EventCategoriesV1Repository.findOneById(id)
+    return await this.eventCategoriesV1Repository.findOneById(id)
   }
 
   async createCategory(data: EventCategoriesCreateV1Request): Promise<IEventCategories> {
-    return await this.EventCategoriesV1Repository.createEventCategory(data);
+    return await this.eventCategoriesV1Repository.createEventCategory(data);
   }
 
   async updateById(
     id: string,
     dataUpdate: eventCategoriesUpdateV1Request,
   ): Promise<IEventCategories> {
-    const eventCategory = await this.EventCategoriesV1Repository.findOneById(id);
+    const eventCategory = await this.eventCategoriesV1Repository.findOneById(id);
 
     if (!eventCategory) {
       throw new NotFoundException('Category Not Found');
@@ -43,13 +43,13 @@ export class EventCategoriesV1Service {
       }),
     });
 
-    return await this.EventCategoriesV1Repository.updateEventCategory(
+    return await this.eventCategoriesV1Repository.updateEventCategory(
       eventCategory,
     );
   }
 
   async softDeleteById(id: string): Promise<Boolean> {
-    const status = await this.EventCategoriesV1Repository.softDelete({ id })
+    const status = await this.eventCategoriesV1Repository.softDelete({ id })
     if (status.affected && status.affected < 1) {
       throw new QueryFailedError(
         'Error, Data not deleted',

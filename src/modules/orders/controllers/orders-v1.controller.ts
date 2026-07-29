@@ -29,7 +29,11 @@ export class OrdersV1Controller {
     return await this.ordersV1Service.paginate(paginationDto)
   }
 
-  @Roles(RoleEnum.ADMIN)
+  // ================================================
+  //                    AUTHENTICATE
+  //=================================================
+
+  @Roles(RoleEnum.ADMIN, RoleEnum.USER)
   @Get(':orderId')
   async orderById(
     @Param('orderId') orderId: string
@@ -42,37 +46,6 @@ export class OrdersV1Controller {
   // ================================================
   //                    USER
   //=================================================
-
-  @Roles(RoleEnum.USER)
-  @Get('me')
-  async getMyOrders(
-    @CurrentUser() user: IUser,
-    @Query() paginationDto: OrderPaginateV1Request,
-  ): Promise<IPaginateData<OrderV1Response>> {
-    const result = await this.ordersV1Service.paginateByUserId(
-      user.id,
-      paginationDto,
-    );
-
-    return {
-      meta: result.meta,
-      items: OrderV1Response.MapEntities(result.items),
-    };
-  }
-
-  @Roles(RoleEnum.USER)
-  @Get('me/:orderId')
-  async getMyOrderById(
-    @CurrentUser() user: IUser,
-    @Param('orderId') orderId: string,
-  ): Promise<OrderV1Response> {
-    const order = await this.ordersV1Service.findOneByIdAndUserId(
-      orderId,
-      user.id,
-    );
-
-    return OrderV1Response.MapEntity(order);
-  }
 
   @Roles(RoleEnum.USER)
   @Post('')

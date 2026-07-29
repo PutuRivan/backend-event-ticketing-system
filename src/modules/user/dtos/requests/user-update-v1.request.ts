@@ -1,14 +1,11 @@
 import { z } from 'zod';
 import { ZodUtils } from '../../../../shared/utils/zod.util';
-import { ErrorMessageConstant } from '../../../../shared/constants/message.constant';
 import { RoleEnum } from '../../../../shared/enums/role.enum';
+import { UserProfileUpdateV1Schema } from './user-profile-update-v1.request';
 
-export const UserUpdateV1Schema = z.object({
-    name: z.string().min(1),
-    email: z.string().email(),
-    password: z.string().min(8),
+export const UserUpdateV1Schema = UserProfileUpdateV1Schema.extend({
     role: z.enum(RoleEnum),
-});
+})
 
 export class UserUpdateV1Request extends ZodUtils.createCamelCaseDto(
     UserUpdateV1Schema,

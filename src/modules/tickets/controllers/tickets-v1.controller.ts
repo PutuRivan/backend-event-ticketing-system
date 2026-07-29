@@ -1,22 +1,40 @@
 import { TicketsV1Service } from './../services/tickets-v1.service';
-import { Controller, Get } from "@nestjs/common";
+import { Body, Controller, Get, Param, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { TicketPaginateV1Request } from '../dtos/requests/tickets-paginate-v1.request';
+import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
+import { TicketV1Response } from '../dtos/responses/tickets-v1.response';
 
 @ApiTags("Tickets")
 @Controller({ path: 'tickets', version: '1' })
 export class TicketsV1Controller {
   constructor(
-    private readonly TicketsV1Service: TicketsV1Service
+    private readonly ticketsV1Service: TicketsV1Service
   ) { }
 
   // ================================================
   //                    ADMIN
   //=================================================
   @Get('')
-  async getAllTickets() { }
+  async getAllTickets(
+    @Query() paginationDto: TicketPaginateV1Request
+  ): Promise<IPaginateData<TicketV1Response>> {
+    const result = await this.ticketsV1Service.paginate(paginationDto)
+
+    return {
+      meta: result.meta,
+      items: TicketV1Response.MapEntities(result.items)
+    }
+  }
 
   @Get(':ticketId')
-  async getTicket() { }
+  async getTicket(
+    @Param('ticketId') ticketId: string
+  ): Promise<TicketV1Response> {
+    const data = await this.ticketsV1Service.findOneByID(ticketId)
+
+    return TicketV1Response.MapEntity(data)
+  }
 
   @Get(':ticketId/download')
   async downloadTicket() { }
