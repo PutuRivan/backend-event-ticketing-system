@@ -15,47 +15,25 @@ import { TicketPaginateV1Request } from "../dtos/requests/tickets-paginate-v1.re
 import { IPaginateData } from "../../../shared/interfaces/paginate-response.interface";
 import { TicketV1Response } from "../dtos/responses/tickets-v1.response";
 import { ITicket } from "../../../infrastructures/databases/interfaces/ticket.interface";
+import { QrCodeService } from "../../../infrastructures/modules/qr/services/qr-code.service";
 
 @Injectable()
 export class TicketsV1Service {
   private queueTicketsService: IQueueService
-  private storageService: IStorageService;
 
   constructor(
     private readonly ticketV1Repository: TicketsV1Repository,
     private readonly queueFactoryService: QueueFactoryService,
-    private readonly storageFactoryService: StorageFactoryService
   ) {
     this.queueTicketsService = this.queueFactoryService.createQueueService(
       QueueName.Tickets
     )
-
-    this.storageService =
-      this.storageFactoryService.createStorageService(
-        StorageDriver.Local
-      );
   }
 
   private generateTicketNumber() {
     return `TKT-${randomUUID()
       .slice(0, 8)
       .toUpperCase()}`;
-  }
-
-
-  async generateQRCode(ticketNumber: string) {
-
-    const buffer =
-      await QRCode.toBuffer(
-        ticketNumber
-      );
-
-
-    return this.storageService.uploadToStorage({
-      folder: "qrcode",
-      filename: `${ticketNumber}.png`,
-      buffer
-    });
   }
 
   async paginate(
@@ -65,7 +43,17 @@ export class TicketsV1Service {
   }
 
   async findOneByID(id: string): Promise<ITicket> {
-    return await this.ticketV1Repository.findOneById(id)
+    return await this.ticketV1Repository.findOneOrFail({
+      where: {
+        id
+      },
+      relations: {
+        order: {
+          user: true,
+          event: true
+        }
+      }
+    });
   }
 
   async createTicket(orderId: string) {
@@ -102,6 +90,19 @@ export class TicketsV1Service {
       ticketId,
       {
         qrCodePath: qrPath
+      }
+    );
+  }
+
+  async updatePdf(
+    ticketId: string,
+    pdfPath: string
+  ) {
+
+    await this.ticketV1Repository.update(
+      ticketId,
+      {
+        pdfPath: pdfPath
       }
     );
   }

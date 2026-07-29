@@ -9,10 +9,12 @@ import { LogActivityModule } from '../../../modules/log-activity/log-activity.mo
 import { QueueLogActivityProcessor } from './processors/queue-log-activity.processor';
 import { QueueTicketProcessor } from './processors/queue-tickets.processor';
 import { TicketsModule } from '../../../modules/tickets/tickets.module';
-import { QueueOrderService } from './services/queue-orders.service';
-import { QueueTicketService } from './services/queue-generate-qr.service';
-import { QueueLogActivityService } from './services/queue-log-activity.service';
-
+import { QueueGenerateTicketService } from "./services/queue-generate-ticket.service";
+import { QueueOrderService } from "./services/queue-orders.service";
+import { QueueLogActivityService } from "./services/queue-log-activity.service";
+import { QrCodeModule } from '../qr/qr-code.module';
+import { PdfModule } from '../pdf/pdf.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
@@ -25,6 +27,9 @@ import { QueueLogActivityService } from './services/queue-log-activity.service';
     forwardRef(() => OrdersModule),
     forwardRef(() => TicketsModule),
     LogActivityModule,
+    QrCodeModule,
+    PdfModule,
+    StorageModule
   ],
   providers: [
     QueueOrderProcessor,
@@ -32,10 +37,18 @@ import { QueueLogActivityService } from './services/queue-log-activity.service';
     QueueLogActivityProcessor,
 
     QueueFactoryService,
+
+    QueueOrderService,
+    QueueGenerateTicketService,
+    QueueLogActivityService,
   ],
   exports: [
     BullModule,
-    QueueFactoryService
+    QueueFactoryService,
+
+    QueueOrderService,
+    QueueGenerateTicketService,
+    QueueLogActivityService,
   ]
 })
 export class QueueModule { }

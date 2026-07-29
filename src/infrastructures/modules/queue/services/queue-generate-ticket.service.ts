@@ -5,7 +5,7 @@ import { QueueName, TQueueTicketJob } from "../constants/queue.constant";
 import { JobsOptions, Queue } from "bullmq";
 
 @Injectable()
-export class QueueTicketService implements IQueueService {
+export class QueueGenerateTicketService implements IQueueService {
   constructor(
     @InjectQueue(QueueName.Tickets)
     private readonly queue: Queue

@@ -39,6 +39,7 @@
     "dotenv": "^17.4.2",
     "nestjs-zod": "^5.4.0",
     "passport-jwt": "^4.0.1",
+    "pdf-lib": "^1.17.1",
     "pg": "^8.22.0",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",

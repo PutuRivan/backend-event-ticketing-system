@@ -82,12 +82,15 @@ export class OrdersV1Repository extends Repository<IOrder> {
   async getTotalReservedTicket(eventId: string): Promise<number> {
     const alias = this.metadata.name
     const query = this.createQueryBuilder(this.metadata.name)
-      .select('COALESCE(SUM(order.quantity), 0)', 'total');
+      .select(
+        `COALESCE(SUM(${alias}.quantity), 0)`,
+        'total'
+      );
 
     QueryFilterUtil.applyFilters(query, {
       filters: [
         {
-          field: `${alias}.eventId}`,
+          field: `${alias}.eventId`,
           value: eventId,
         },
         {

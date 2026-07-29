@@ -110,15 +110,15 @@ export class OrdersV1Service {
     return order;
   }
 
-  async paginateByUserId(
-    userId: string,
-    paginationDto: OrderPaginateV1Request,
-  ): Promise<IPaginateData<IOrder>> {
-    return await this.ordersV1Repository.paginateByUserId(
-      userId,
-      paginationDto,
-    );
-  }
+  // async paginateByUserId(
+  //   userId: string,
+  //   paginationDto: OrderPaginateV1Request,
+  // ): Promise<IPaginateData<IOrder>> {
+  //   return await this.ordersV1Repository.paginateByUserId(
+  //     userId,
+  //     paginationDto,
+  //   );
+  // }
 
   async paymentOrder(
     idOrder: string

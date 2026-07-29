@@ -5,7 +5,7 @@ import { QueueName, TQueueName } from '../constants/queue.constant';
 import { IQueueService } from '../interfaces/queue-service.interface';
 import { QueueOrderService } from './queue-orders.service';
 import { QueueLogActivityService } from './queue-log-activity.service';
-import { QueueTicketService } from './queue-generate-qr.service';
+import { QueueGenerateTicketService } from './queue-generate-ticket.service';
 
 @Injectable()
 export class QueueFactoryService {
@@ -35,7 +35,7 @@ export class QueueFactoryService {
                 return new QueueOrderService(this.queueOrders)
             }
             case QueueName.Tickets: {
-                return new QueueTicketService(this.queueTickets)
+                return new QueueGenerateTicketService(this.queueTickets)
             }
             default: {
                 throw new Error(

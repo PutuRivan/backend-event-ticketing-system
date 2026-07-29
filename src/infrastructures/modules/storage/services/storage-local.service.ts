@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { IStorageService } from "../interfaces/storage.interface";
+import { IStorageGetRequest, IStorageService } from "../interfaces/storage.interface";
 import { config } from "../../../../config";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
@@ -57,24 +57,14 @@ export class StorageLocalService implements IStorageService {
   }
 
 
-  async getFromStorage<T>(
-    data: T
+  async getFromStorage(
+    data: IStorageGetRequest
   ): Promise<Buffer> {
-
-    const {
-      folder,
-      filename
-    } = data as {
-      folder: string;
-      filename: string;
-    };
-
 
     const filePath =
       path.join(
         this.rootPath,
-        folder,
-        filename
+        data.path
       );
 
 
