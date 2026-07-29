@@ -6,12 +6,13 @@ import { IQueueService } from '../interfaces/queue-service.interface';
 import { QueueOrderService } from './queue-orders.service';
 import { QueueLogActivityService } from './queue-log-activity.service';
 import { QueueGenerateTicketService } from './queue-generate-ticket.service';
+import { QueueMailService } from './queue-mail.service';
 
 @Injectable()
 export class QueueFactoryService {
     constructor(
-        // @InjectQueue(QueueName.Mail)
-        // private readonly queueMail: Queue,
+        @InjectQueue(QueueName.Mail)
+        private readonly queueMail: Queue,
 
         @InjectQueue(QueueName.LogActivity)
         private readonly queueLogActivity: Queue,
@@ -25,9 +26,9 @@ export class QueueFactoryService {
 
     createQueueService(queueName: TQueueName): IQueueService {
         switch (queueName) {
-            // case QueueName.Mail: {
-            //     return new QueueMailService(this.queueMail);
-            // }
+            case QueueName.Mail: {
+                return new QueueMailService(this.queueMail);
+            }
             case QueueName.LogActivity: {
                 return new QueueLogActivityService(this.queueLogActivity);
             }

@@ -17,6 +17,9 @@ import { DateTimeUtil } from './shared/utils/datetime.util';
 import { LogActivityInterceptor } from './infrastructures/interceptors/log-activity.interceptor';
 import { LogActivityModule } from './modules/log-activity/log-activity.module';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -38,6 +41,34 @@ import { ZodValidationPipe } from 'nestjs-zod';
           )
         }
       }
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: config.smtp.host,
+        port: config.smtp.port,
+        secure: false,
+        ...(config.smtp.user && config.smtp.password
+          ? {
+            auth: {
+              user: config.smtp.user,
+              pass: config.smtp.password,
+            },
+          }
+          : {}),
+      },
+      defaults: {
+        from: `"No Reply" <${config.smtp.emailSender}>`,
+      },
+      template: {
+        dir: join(
+          __dirname,
+          './infrastructures/modules/mail/templates',
+        ),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
     }),
     AuthModule,
     UserModule,

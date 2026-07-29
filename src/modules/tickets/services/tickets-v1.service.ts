@@ -99,7 +99,7 @@ export class TicketsV1Service {
     pdfPath: string
   ) {
 
-    await this.ticketV1Repository.update(
+    return await this.ticketV1Repository.update(
       ticketId,
       {
         pdfPath: pdfPath

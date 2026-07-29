@@ -15,6 +15,9 @@ import { QueueLogActivityService } from "./services/queue-log-activity.service";
 import { QrCodeModule } from '../qr/qr-code.module';
 import { PdfModule } from '../pdf/pdf.module';
 import { StorageModule } from '../storage/storage.module';
+import { MailModule } from '../mail/mail.module';
+import { QueueMailProcessor } from './processors/queue-mail.processor';
+import { QueueMailService } from './services/queue-mail.service';
 
 @Module({
   imports: [
@@ -29,18 +32,21 @@ import { StorageModule } from '../storage/storage.module';
     LogActivityModule,
     QrCodeModule,
     PdfModule,
-    StorageModule
+    StorageModule,
+    MailModule
   ],
   providers: [
     QueueOrderProcessor,
     QueueTicketProcessor,
     QueueLogActivityProcessor,
+    QueueMailProcessor,
 
     QueueFactoryService,
 
     QueueOrderService,
     QueueGenerateTicketService,
     QueueLogActivityService,
+    QueueMailService
   ],
   exports: [
     BullModule,

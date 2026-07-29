@@ -1,5 +1,5 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { QueueName, QueueOrderJob, QueueTicketJob } from "../constants/queue.constant";
+import { QueueMailJob, QueueName, QueueOrderJob, QueueTicketJob } from "../constants/queue.constant";
 import { TicketsV1Service } from "../../../../modules/tickets/services/tickets-v1.service";
 import { Job } from "bullmq";
 import { QueueGenerateTicketService } from "../services/queue-generate-ticket.service";
@@ -8,6 +8,9 @@ import { QrCodeService } from "../../qr/services/qr-code.service";
 import { StorageFactoryService } from "../../storage/services/storage-factory.service";
 import { IStorageService } from "../../storage/interfaces/storage.interface";
 import { StorageDriver } from "../../storage/constant/storage.constant";
+import { QueueMailService } from "../services/queue-mail.service";
+import { MailSendDto } from "../../mail/dto/mail-send.dto";
+import { MailTemplateFileEnum } from "../../mail/enums/mail-template-file.enum";
 
 @Processor(QueueName.Tickets)
 export class QueueTicketProcessor extends WorkerHost {
@@ -18,6 +21,7 @@ export class QueueTicketProcessor extends WorkerHost {
     private readonly pdfService: PdfService,
     private readonly qrCodeService: QrCodeService,
     private readonly storageFactoryService: StorageFactoryService,
+    private readonly queueMailService: QueueMailService
 
   ) {
     super();
@@ -62,14 +66,11 @@ export class QueueTicketProcessor extends WorkerHost {
 
           break;
         case QueueTicketJob.GeneratePdf:
-          console.log("START PDF");
 
           const ticket =
             await this.ticketsV1Service.findOneByID(
               job.data.ticketId
             );
-
-          console.log("TICKET", ticket)
 
           const qrCode =
             await this.storageService.getFromStorage({
@@ -81,19 +82,14 @@ export class QueueTicketProcessor extends WorkerHost {
             await this.pdfService.generate({
               ticketNumber:
                 ticket.ticketNumber,
-
               eventName:
                 ticket.order.event.title,
-
               userName:
                 ticket.order.user.name,
-
               eventDate:
                 ticket.order.event.eventDate,
-
               location:
                 ticket.order.event.location,
-
               qrCode
             });
 
@@ -107,6 +103,29 @@ export class QueueTicketProcessor extends WorkerHost {
           await this.ticketsV1Service.updatePdf(
             ticket.id,
             pdfPath
+          );
+
+          await this.queueMailService.sendToQueue<MailSendDto>(
+            {
+              to: ticket.order.user.email,
+              subject: 'Your Event Ticket',
+              template: MailTemplateFileEnum.TicketCreated,
+              context: {
+                name: ticket.order.user.name,
+                eventName: ticket.order.event.title,
+                ticketNumber: ticket.ticketNumber,
+                eventDate: ticket.order.event.eventDate,
+                location: ticket.order.event.location,
+                quantity: ticket.order.quantity
+              },
+              attachments: [
+                {
+                  filename: 'ticket.pdf',
+                  path: pdfPath,
+                }
+              ],
+            },
+            QueueMailJob.MailSend,
           );
 
           break;

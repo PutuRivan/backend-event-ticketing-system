@@ -56,5 +56,12 @@ export const config = {
     ), // 5 seconds
     retryAttempts: +(process.env.QUEUE_RETRY_ATTEMPTS || 3), // 3 attempts
     orderExpirationDelaySeconds: +(process.env.QUEUE_EXPIRE_ORDER_IN_SECONDS || 900), // 900 seconds
-  }
+  },
+  smtp: {
+    host: process.env.SMTP_HOST || 'smtp.example.com',
+    port: +(process.env.SMTP_PORT || 587),
+    emailSender: process.env.SMTP_EMAIL_SENDER || 'user@noreply.com',
+    user: process.env.SMTP_USER || '',
+    password: process.env.SMTP_PASSWORD || '',
+  },
 }
