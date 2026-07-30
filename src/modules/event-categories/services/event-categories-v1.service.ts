@@ -9,7 +9,7 @@ import { eventCategoriesUpdateV1Request } from '../dtos/requests/event-categorie
 @Injectable()
 export class EventCategoriesV1Service {
   constructor(
-    private readonly eventCategoriesV1Repository: EventCategoriesV1Repository
+    private readonly eventCategoriesV1Repository: EventCategoriesV1Repository,
   ) { }
 
   async paginate(paginationDto: EventCategoriesPaginateV1Request) {
@@ -21,7 +21,9 @@ export class EventCategoriesV1Service {
   }
 
   async createCategory(data: EventCategoriesCreateV1Request): Promise<IEventCategories> {
-    return await this.eventCategoriesV1Repository.createEventCategory(data);
+    const category = this.eventCategoriesV1Repository.createEventCategory(data);
+
+    return category;
   }
 
   async updateById(

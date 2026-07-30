@@ -24,6 +24,7 @@ import { ResponseInterceptor } from './infrastructures/interceptors/response.int
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { HttpCacheInterceptor } from './infrastructures/modules/cache/interceptors/http-cache.interceptor';
 import { CacheModule } from './infrastructures/modules/cache/cache.module';
+import { CacheInvalidateInterceptor } from './infrastructures/modules/cache/interceptors/cache-invalidate.interceptor';
 
 @Module({
   imports: [
@@ -110,6 +111,10 @@ import { CacheModule } from './infrastructures/modules/cache/cache.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: HttpCacheInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInvalidateInterceptor,
     },
   ],
 })

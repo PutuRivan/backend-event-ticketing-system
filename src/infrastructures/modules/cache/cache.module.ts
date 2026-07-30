@@ -3,25 +3,35 @@ import { Module } from '@nestjs/common';
 import { redisStore } from 'cache-manager-ioredis-yet';
 import { config } from '../../../config';
 import { HttpCacheInterceptor } from './interceptors/http-cache.interceptor';
+import { CacheService } from './services/cache.service';
+import { Keyv } from 'keyv';
+import KeyvRedis from '@keyv/redis';
+import { CacheInvalidateInterceptor } from './interceptors/cache-invalidate.interceptor';
 
 @Module({
     imports: [
-        NestCacheModule.registerAsync({
-            useFactory: async () => ({
-                store: await redisStore({
-                    host: config.redis.host,
-                    port: config.redis.port,
+        NestCacheModule.register({
+            stores: [
+                new Keyv({
+                    store: new KeyvRedis(
+                        `redis://${config.redis.host
+                        }:${config.redis.port}`
+                    ),
                     ttl: config.cache.ttl,
-                    enableReadyCheck: true,
-                    maxRetriesPerRequest: null,
-                    prefix: `${config.app.name}:${config.nodeEnv}:cache`,
-                    lazyConnect: true,
                 }),
-            }),
+            ],
             isGlobal: true,
         }),
     ],
-    providers: [HttpCacheInterceptor],
-    exports: [HttpCacheInterceptor],
+    providers: [
+        HttpCacheInterceptor,
+        CacheInvalidateInterceptor,
+        CacheService
+    ],
+    exports: [
+        HttpCacheInterceptor,
+        CacheInvalidateInterceptor,
+        CacheService
+    ],
 })
 export class CacheModule { }

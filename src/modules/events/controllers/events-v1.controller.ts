@@ -9,9 +9,14 @@ import { Controller, Get, Post, Patch, Delete, Query, Body, Param } from "@nestj
 import { Public } from '../../../shared/decorators/public.decorator';
 import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
+import { CachePrefix } from '../../../infrastructures/modules/cache/decorators/cache-prefix.decorator';
+import { InvalidateCache } from '../../../infrastructures/modules/cache/decorators/invalidate-cache.decorator';
+import { Cacheable } from '../../../infrastructures/modules/cache/decorators/cacheable.decorator';
+import { DateTimeUtil } from '../../../shared/utils/datetime.util';
 
 @ApiTags('Event')
 @Controller({ path: "events", version: "1" })
+@CachePrefix('Events')
 export class EventsV1Controller {
   constructor(
     private readonly eventV1Service: EventV1Service
@@ -22,6 +27,7 @@ export class EventsV1Controller {
   //=================================================
   @Public()
   @Get('')
+  @Cacheable(DateTimeUtil.hours(1))
   async getAllEvent(
     @Query() paginateDto: EventPaginateV1Request
   ): Promise<IPaginateData<EventV1Response>> {
@@ -35,6 +41,7 @@ export class EventsV1Controller {
 
   @Public()
   @Get(':eventId')
+  @Cacheable(DateTimeUtil.hours(1))
   async getEventById(
     @Param('eventId') eventId: string
   ): Promise<EventV1Response> {
@@ -48,6 +55,7 @@ export class EventsV1Controller {
   //=================================================
   @Roles(RoleEnum.ADMIN)
   @Post('')
+  @InvalidateCache()
   async createEvent(
     @Body() dataEvent: eventCreateV1Request
   ): Promise<EventV1Response> {
@@ -58,6 +66,7 @@ export class EventsV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Patch(':eventId')
+  @InvalidateCache()
   async updateEventById(
     @Param('eventId') eventId: string,
     @Body() updateData: EventUpdateV1Request
@@ -69,6 +78,7 @@ export class EventsV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Delete(':eventId')
+  @InvalidateCache()
   async deleteEventById(
     @Param('eventId') eventId: string
   ): Promise<EventV1Response | null> {
@@ -79,6 +89,7 @@ export class EventsV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Patch(':eventId/publish')
+  @InvalidateCache()
   async updateEventToPublish(
     @Param('eventId') eventId: string
   ): Promise<EventV1Response> {
@@ -89,6 +100,7 @@ export class EventsV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Patch(':eventId/unpublish')
+  @InvalidateCache()
   async updateEventToUnpublish(
     @Param('eventId') eventId: string
   ): Promise<EventV1Response> {

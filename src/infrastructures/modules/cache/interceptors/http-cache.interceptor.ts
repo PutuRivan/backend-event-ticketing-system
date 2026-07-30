@@ -53,9 +53,11 @@ export class HttpCacheInterceptor implements NestInterceptor {
 
         try {
             const cached = await this.cacheManager.get(cacheKey);
+
             if (cached !== null && cached !== undefined) {
                 return of(cached);
             }
+
 
         } catch (e) {
             console.error("CACHE SET ERROR:", e);

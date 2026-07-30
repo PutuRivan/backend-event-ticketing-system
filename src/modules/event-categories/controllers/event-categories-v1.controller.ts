@@ -12,6 +12,7 @@ import { RoleEnum } from '../../../shared/enums/role.enum';
 import { CachePrefix } from '../../../infrastructures/modules/cache/decorators/cache-prefix.decorator';
 import { Cacheable } from '../../../infrastructures/modules/cache/decorators/cacheable.decorator';
 import { DateTimeUtil } from '../../../shared/utils/datetime.util';
+import { InvalidateCache } from '../../../infrastructures/modules/cache/decorators/invalidate-cache.decorator';
 
 @ApiTags('Event Categories')
 @Controller({ path: "event-categories", version: "1" })
@@ -26,7 +27,7 @@ export class EventCategoriesV1Controller {
   //=================================================
   @Public()
   @Get('')
-  @Cacheable()
+  @Cacheable(DateTimeUtil.hours(1))
   async getAllEventCategories(
     @Query() paginationDto: EventCategoriesPaginateV1Request
   ): Promise<IPaginationData<EventCategoriesV1Response>> {
@@ -54,6 +55,7 @@ export class EventCategoriesV1Controller {
   //=================================================
   @Roles(RoleEnum.ADMIN)
   @Post('')
+  @InvalidateCache()
   async createEventCategories(
     @Body() dataCategory: EventCategoriesCreateV1Request
   ): Promise<EventCategoriesV1Response> {
@@ -64,6 +66,7 @@ export class EventCategoriesV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Patch(':categoryId')
+  @InvalidateCache()
   async updateEventCategoriesById(
     @Param('categoryId') categoryId: string,
     @Body() dataCategory: eventCategoriesUpdateV1Request
@@ -75,6 +78,7 @@ export class EventCategoriesV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Delete(':categoryId')
+  @InvalidateCache()
   async deleteEventCategoriesById(
     @Param('categoryId') categoryId: string
   ): Promise<EventCategoriesV1Response | null> {
