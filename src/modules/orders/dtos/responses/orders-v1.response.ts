@@ -1,24 +1,29 @@
+import { IEvent } from "../../../../infrastructures/databases/interfaces/event.interface";
 import { IOrder } from "../../../../infrastructures/databases/interfaces/order.interface";
 import { ITicket } from "../../../../infrastructures/databases/interfaces/ticket.interface";
+import { IUser } from "../../../../infrastructures/databases/interfaces/user.interface";
 import { OrderStatusEnum } from "../../../../shared/enums/order-status.enum";
+import { EventV1Response } from "../../../events/dtos/responses/event-v1.response";
+import { TicketV1Response } from "../../../tickets/dtos/responses/tickets-v1.response";
+import { UserV1Response } from "../../../user/dtos/responses/user-v1.response";
 
 export class OrderV1Response {
-  userId: string;
-  eventId: string;
   totalPrice: number;
   status: OrderStatusEnum;
   expiredAt?: Date | null;
   paidAt?: Date | null;
-  tickets: ITicket[];
+  user: UserV1Response;
+  event: EventV1Response
+  tickets: TicketV1Response[];
 
   constructor(entity: IOrder) {
-    this.userId = entity.userId
-    this.eventId = entity.eventId
+    this.user = UserV1Response.MapEntity(entity.user)
+    this.event = EventV1Response.MapEntity(entity.event)
     this.totalPrice = entity.totalPrice
     this.status = entity.status
     this.expiredAt = entity.expiredAt
     this.paidAt = entity.paidAt
-    this.tickets = entity.tickets
+    this.tickets = TicketV1Response.MapEntities(entity.tickets)
   }
 
   static MapEntity(entity: IOrder): OrderV1Response {

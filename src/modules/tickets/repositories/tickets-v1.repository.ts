@@ -10,7 +10,7 @@ import { QuerySortingUtil } from "../../../shared/utils/query-sort.util";
 import { PaginationUtil } from "../../../shared/utils/pagination.util";
 
 @Injectable()
-export class TicketsV1Repository extends Repository<Tickets> {
+export class TicketsV1Repository extends Repository<ITicket> {
   constructor(
     @InjectRepository(Tickets)
     private readonly repo: Repository<ITicket>
@@ -29,7 +29,7 @@ export class TicketsV1Repository extends Repository<Tickets> {
 
     const query = this
       .createQueryBuilder(this.metadata.name)
-      .leftJoinAndSelect(`${alias}.orders`, 'orders')
+      .leftJoinAndSelect(`${alias}.order`, 'order')
 
     QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORTS)
 

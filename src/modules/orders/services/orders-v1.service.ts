@@ -91,7 +91,13 @@ export class OrdersV1Service {
   }
 
   async findOneById(id: string): Promise<IOrder> {
-    return await this.ordersV1Repository.findOneById(id)
+    const order = await this.ordersV1Repository.findOneById(id)
+
+    if (!order) {
+      throw new NotFoundException("Order Not Found")
+    }
+
+    return order
   }
 
   async findOneByIdAndUserId(

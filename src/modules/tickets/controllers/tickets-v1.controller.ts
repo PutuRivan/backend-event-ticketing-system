@@ -4,6 +4,8 @@ import { ApiTags } from "@nestjs/swagger";
 import { TicketPaginateV1Request } from '../dtos/requests/tickets-paginate-v1.request';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
 import { TicketV1Response } from '../dtos/responses/tickets-v1.response';
+import { Roles } from '../../../shared/decorators/role.decorator';
+import { RoleEnum } from '../../../shared/enums/role.enum';
 
 @ApiTags("Tickets")
 @Controller({ path: 'tickets', version: '1' })
@@ -16,6 +18,7 @@ export class TicketsV1Controller {
   //                    ADMIN
   //=================================================
   @Get('')
+  @Roles(RoleEnum.ADMIN)
   async getAllTickets(
     @Query() paginationDto: TicketPaginateV1Request
   ): Promise<IPaginateData<TicketV1Response>> {
@@ -28,6 +31,7 @@ export class TicketsV1Controller {
   }
 
   @Get(':ticketId')
+  @Roles(RoleEnum.ADMIN, RoleEnum.USER)
   async getTicket(
     @Param('ticketId') ticketId: string
   ): Promise<TicketV1Response> {

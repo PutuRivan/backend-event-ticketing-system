@@ -19,7 +19,13 @@ export class EventV1Service {
   }
 
   async findOneById(id: string): Promise<IEvent> {
-    return await this.EventV1Repository.findOneById(id)
+    const event = await this.EventV1Repository.findOneById(id)
+
+    if (!event) {
+      throw new NotFoundException("Event Not Found")
+    }
+
+    return event
   }
 
   async createEvent(

@@ -24,47 +24,27 @@ export class StorageLocalService implements IStorageService {
       this.validateUpload(data);
 
 
-      const relativePath =
-        path.join(
-          data.folder,
-          data.filename
-        );
+      const relativePath = path.posix.join(data.folder, data.filename);
 
 
-      const absolutePath =
-        path.join(
-          this.rootPath,
-          relativePath
-        );
+      const absolutePath = path.join(this.rootPath, relativePath);
 
 
-      const directory =
-        path.dirname(
-          absolutePath
-        );
+      const directory = path.dirname(absolutePath);
 
 
-      await mkdir(
-        directory,
-        {
-          recursive: true
-        }
-      );
+      await mkdir(directory, {
+        recursive: true
+      });
 
 
-      await writeFile(
-        absolutePath,
-        data.buffer
-      );
-
+      await writeFile(absolutePath, data.buffer);
 
       this.logger.log(
         `File uploaded successfully: ${relativePath}`
       );
 
-
       return relativePath;
-
 
     } catch (error: any) {
 

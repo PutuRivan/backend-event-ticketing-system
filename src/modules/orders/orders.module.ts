@@ -9,6 +9,7 @@ import { OrdersV1Repository } from './repositories/orders-v1.repository';
 import { EventV1Repository } from '../events/repositories/events-v1.repository';
 import { TicketsModule } from '../tickets/tickets.module';
 import { QueueModule } from '../../infrastructures/modules/queue/queue.module';
+import { Users } from '../../infrastructures/databases/entities/users.entity';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { QueueModule } from '../../infrastructures/modules/queue/queue.module';
       Orders,
       EventCategories,
       Events,
+      Users,
     ]),
     forwardRef(() => TicketsModule),
     forwardRef(() => QueueModule),

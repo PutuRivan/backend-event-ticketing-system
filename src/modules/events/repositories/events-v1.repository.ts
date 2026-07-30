@@ -105,10 +105,15 @@ export class EventV1Repository extends Repository<Events> {
     return await this.save(entity)
   }
 
-  async findOneById(id: string): Promise<IEvent> {
-    return await this.findOneOrFail({
-      where: { id }
-    })
+  async findOneById(id: string): Promise<IEvent | null> {
+    const alias = this.metadata.name
+    const query = this
+      .createQueryBuilder(this.metadata.name)
+      .leftJoinAndSelect(`${alias}.category`, 'category')
+      .where(`${alias}.id = :id`, { id })
+      .getOne()
+
+    return query
   }
 
   async updateEvent(entity: Events): Promise<Events> {

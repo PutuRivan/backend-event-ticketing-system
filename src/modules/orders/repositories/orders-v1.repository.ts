@@ -26,7 +26,6 @@ export class OrdersV1Repository extends Repository<IOrder> {
     const alias = this.metadata.name
     const ALLOWED_SORT = new Map<string, string>([
       ['created_at', `${alias}.createdAt`],
-      ['deleted_at', `${alias}.deletedAt`],
       ['updated_at', `${alias}.updatedAt`]
     ])
 
@@ -73,14 +72,17 @@ export class OrdersV1Repository extends Repository<IOrder> {
     }
   }
 
-  async findOneById(id: string): Promise<IOrder> {
-    return await this.findOneOrFail({
-      where: { id },
-      relations: {
-        user: true,
-        event: true,
-      }
-    })
+  async findOneById(id: string): Promise<IOrder | null> {
+    const alias = this.metadata.name
+    const query = this
+      .createQueryBuilder(alias)
+      .leftJoinAndSelect(`${alias}.user`, 'users')
+      .leftJoinAndSelect(`${alias}.event`, 'event')
+      .leftJoinAndSelect(`${alias}.tickets`, 'tickets')
+      .where(`${alias}.id = :id`, { id })
+      .getOne()
+
+    return query
   }
 
   async getTotalReservedTicket(eventId: string): Promise<number> {

@@ -22,7 +22,6 @@ export class UserV1Repository extends Repository<IUser> {
     const ALLOWED_SORTS = new Map<string, string>([
       ['updated_at', `${alias}.updatedAt`],
       ['created_at', `${alias}.createdAt`],
-      ['deleted_at', `${alias}.deletedAt`]
     ]);
 
     const query = this.createQueryBuilder(this.metadata.name)
