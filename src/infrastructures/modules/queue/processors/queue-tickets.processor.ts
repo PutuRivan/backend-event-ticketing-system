@@ -149,7 +149,7 @@ export class QueueTicketProcessor extends WorkerHost {
               attachments: [
                 {
                   filename: 'ticket.pdf',
-                  path: pdfPath,
+                  path: this.storageService.getAbsolutePath(pdfPath),
                 }
               ],
             },

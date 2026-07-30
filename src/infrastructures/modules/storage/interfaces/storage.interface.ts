@@ -1,3 +1,6 @@
+import { IStorageGetRequest } from "./storage-get-request.interface";
+import { IStorageUploadRequest } from "./storage-upload-request.interface";
+
 export interface IStorageService {
 
   uploadToStorage(
@@ -8,14 +11,18 @@ export interface IStorageService {
   getFromStorage(
     data: IStorageGetRequest
   ): Promise<Buffer>;
-}
 
-export interface IStorageUploadRequest {
-  folder: string;
-  filename: string;
-  buffer: Buffer;
-}
 
-export interface IStorageGetRequest {
-  path: string;
+  deleteFromStorage(
+    path: string
+  ): Promise<void>;
+
+
+  getFileUrl(
+    path: string
+  ): Promise<string>;
+
+  getAbsolutePath(
+    filePath: string
+  ): string;
 }

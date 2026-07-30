@@ -15,7 +15,8 @@ export const config = {
     ), // 100 KB
     requestUrlencodedBodyLimitInBytes: +(
       process.env.REQUEST_URLENCODED_BODY_LIMIT_IN_BYTES ?? 1048576
-    ), // 1 MB
+    ), // 1 MB,
+    url: process.env.APP_URL ?? 'http:localhost:3000'
   },
   db: {
     host: process.env.DB_HOST ?? '127.0.0.1',
