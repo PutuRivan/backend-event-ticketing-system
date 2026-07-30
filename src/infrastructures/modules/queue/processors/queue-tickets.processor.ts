@@ -1,5 +1,5 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { QueueMailJob, QueueName, QueueOrderJob, QueueTicketJob } from "../constants/queue.constant";
+import { QueueMailJob, QueueName, QueueOrderJob, QueueReminderJob, QueueTicketJob } from "../constants/queue.constant";
 import { TicketsV1Service } from "../../../../modules/tickets/services/tickets-v1.service";
 import { Job } from "bullmq";
 import { QueueGenerateTicketService } from "../services/queue-generate-ticket.service";
@@ -11,8 +11,12 @@ import { StorageDriver } from "../../storage/constant/storage.constant";
 import { QueueMailService } from "../services/queue-mail.service";
 import { MailSendDto } from "../../mail/dto/mail-send.dto";
 import { MailTemplateFileEnum } from "../../mail/enums/mail-template-file.enum";
+import { QueueReminderService } from "../services/queue-reminder.service";
+import { getReminderSchedules } from "../helpers/reminder.helper"
 
-@Processor(QueueName.Tickets)
+@Processor(QueueName.Tickets, {
+  concurrency: 5,
+})
 export class QueueTicketProcessor extends WorkerHost {
   private storageService: IStorageService;
   constructor(
@@ -21,7 +25,8 @@ export class QueueTicketProcessor extends WorkerHost {
     private readonly pdfService: PdfService,
     private readonly qrCodeService: QrCodeService,
     private readonly storageFactoryService: StorageFactoryService,
-    private readonly queueMailService: QueueMailService
+    private readonly queueMailService: QueueMailService,
+    private readonly queueReminderService: QueueReminderService,
 
   ) {
     super();
@@ -38,7 +43,8 @@ export class QueueTicketProcessor extends WorkerHost {
 
       switch (jobName) {
 
-        case QueueTicketJob.GenerateQrCode:
+        case QueueTicketJob.GenerateQrCode: {
+
           const qrBuffer =
             await this.qrCodeService.generate({
               value: job.data.ticketNumber
@@ -51,22 +57,44 @@ export class QueueTicketProcessor extends WorkerHost {
               buffer: qrBuffer
             });
 
-          await this.ticketsV1Service.updateQRCode(
-            job.data.ticketId,
-            qrPath
-          );
+          const ticket =
+            await this.ticketsV1Service.updateQRCode(
+              job.data.ticketId,
+              qrPath
+            );
 
+          const schedules =
+            getReminderSchedules(
+              ticket.order.event.eventDate
+            );
+          await Promise.allSettled([
+            ...schedules.map((schedule) =>
+              this.queueReminderService.sendToQueue(
+                {
+                  orderId: ticket.order.id,
+                  reminderType: schedule.type,
+                },
+                QueueReminderJob.SendReminder,
+                {
+                  delay: schedule.delay,
+                  jobId:
+                    `${ticket.order.id}-${schedule.type}`,
+                },
+              )
+            ),
 
-          await this.queueTicketService.sendToQueue(
-            {
-              ticketId: job.data.ticketId
-            },
-            QueueTicketJob.GeneratePdf
-          );
+            this.queueTicketService.sendToQueue(
+              {
+                ticketId: job.data.ticketId
+              },
+              QueueTicketJob.GeneratePdf
+            )
+          ]);
 
           break;
-        case QueueTicketJob.GeneratePdf:
+        }
 
+        case QueueTicketJob.GeneratePdf: {
           const ticket =
             await this.ticketsV1Service.findOneByID(
               job.data.ticketId
@@ -127,8 +155,8 @@ export class QueueTicketProcessor extends WorkerHost {
             },
             QueueMailJob.MailSend,
           );
-
           break;
+        }
 
         default:
           throw new Error(

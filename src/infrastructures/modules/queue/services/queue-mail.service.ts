@@ -15,6 +15,11 @@ export class QueueMailService implements IQueueService {
         opts?: JobsOptions,
     ): Promise<void> {
         try {
+            console.log("ADD MAIL JOB", {
+                jobName,
+                data,
+                opts
+            });
             await this.queue.add(jobName, data, opts);
         } catch (error: any) {
             throw new Error(`Failed to add job to the queue: ${error.message}`);

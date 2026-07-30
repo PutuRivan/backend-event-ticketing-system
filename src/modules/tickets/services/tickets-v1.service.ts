@@ -65,7 +65,6 @@ export class TicketsV1Service {
 
     const ticketNumber = this.generateTicketNumber();
 
-
     const entity =
       this.ticketV1Repository.create({
         orderId,
@@ -89,7 +88,7 @@ export class TicketsV1Service {
   async updateQRCode(
     ticketId: string,
     qrPath: string
-  ) {
+  ): Promise<ITicket> {
 
     await this.ticketV1Repository.update(
       ticketId,
@@ -97,6 +96,20 @@ export class TicketsV1Service {
         qrCodePath: qrPath
       }
     );
+
+
+    return await this.ticketV1Repository.findOneOrFail({
+      where: {
+        id: ticketId,
+      },
+      relations: {
+        order: {
+          event: true,
+          user: true,
+        },
+      },
+    });
+
   }
 
   async updatePdf(

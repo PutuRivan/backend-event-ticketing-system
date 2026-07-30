@@ -75,7 +75,11 @@ export class OrdersV1Repository extends Repository<IOrder> {
 
   async findOneById(id: string): Promise<IOrder> {
     return await this.findOneOrFail({
-      where: { id }
+      where: { id },
+      relations: {
+        user: true,
+        event: true,
+      }
     })
   }
 

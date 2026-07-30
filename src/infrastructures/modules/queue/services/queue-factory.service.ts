@@ -7,6 +7,7 @@ import { QueueOrderService } from './queue-orders.service';
 import { QueueLogActivityService } from './queue-log-activity.service';
 import { QueueGenerateTicketService } from './queue-generate-ticket.service';
 import { QueueMailService } from './queue-mail.service';
+import { QueueReminderService } from './queue-reminder.service';
 
 @Injectable()
 export class QueueFactoryService {
@@ -21,7 +22,11 @@ export class QueueFactoryService {
         private readonly queueOrders: Queue,
 
         @InjectQueue(QueueName.Tickets)
-        private readonly queueTickets: Queue
+        private readonly queueTickets: Queue,
+
+        @InjectQueue(QueueName.Reminder)
+        private readonly queueReminder: Queue,
+
     ) { }
 
     createQueueService(queueName: TQueueName): IQueueService {
@@ -37,6 +42,9 @@ export class QueueFactoryService {
             }
             case QueueName.Tickets: {
                 return new QueueGenerateTicketService(this.queueTickets)
+            }
+            case QueueName.Reminder: {
+                return new QueueReminderService(this.queueTickets)
             }
             default: {
                 throw new Error(

@@ -13,10 +13,6 @@ export class QueueMailProcessor extends WorkerHost {
     async process(job: Job): Promise<void> {
         try {
             const jobName = job.name;
-            console.log('MAIL PROCESSOR');
-            console.log(job.name);
-            console.log(job.data);
-
             if (jobName === QueueMailJob.MailSend) {
                 const { to, subject, template, context, attachments } =
                     job.data as MailSendDto;
