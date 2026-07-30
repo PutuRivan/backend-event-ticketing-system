@@ -20,6 +20,8 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { join } from 'path';
+import { ResponseInterceptor } from './infrastructures/interceptors/response.interceptor';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -76,6 +78,7 @@ import { join } from 'path';
     EventModule,
     OrdersModule,
     TicketsModule,
+    DashboardModule,
     LogActivityModule,
 
     QueueModule
@@ -96,6 +99,10 @@ import { join } from 'path';
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
     },
   ],
 })

@@ -21,7 +21,6 @@ export class EventV1Repository extends Repository<Events> {
 
   async paginate(request: EventPaginateV1Request) {
     const alias = this.metadata.name
-    console.log("ALIAS:", alias)
     const ALLOWED_SORTS = new Map<string, string>([
       ['event_date', `${alias}.eventDate`],
       ['ticket_price', `${alias}.ticketPrice`],

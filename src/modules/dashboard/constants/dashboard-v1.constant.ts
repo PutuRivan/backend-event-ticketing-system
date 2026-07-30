@@ -1,0 +1,2 @@
+export const DASHBOARD_V1_REPOSITORY =
+  Symbol("DASHBOARD_V1_REPOSITORY");

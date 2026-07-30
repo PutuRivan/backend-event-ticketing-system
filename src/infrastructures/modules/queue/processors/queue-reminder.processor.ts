@@ -21,8 +21,6 @@ export class QueueReminderProcessor extends WorkerHost {
   async process(job: Job): Promise<void> {
 
     const jobName = job.name;
-    console.log("JOB NAME :", job.name);
-    console.log("JOB DATA :", job.data);
 
     switch (jobName) {
       case QueueReminderJob.SendReminder:
@@ -32,23 +30,12 @@ export class QueueReminderProcessor extends WorkerHost {
             job.data.orderId,
           );
 
-        console.log(
-          "ORDER FOUND :",
-          order
-        );
 
         if (!order)
           return;
 
-        console.log(
-          "ORDER STATUS:",
-          order.status
-        );
-
         if (order.status !== OrderStatusEnum.PAID)
           return;
-
-        console.log("SEND REMINDER EMAIL");
 
         await this.queueMailService.sendToQueue(
           {
