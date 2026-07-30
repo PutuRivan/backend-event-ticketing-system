@@ -64,4 +64,7 @@ export const config = {
     user: process.env.SMTP_USER || '',
     password: process.env.SMTP_PASSWORD || '',
   },
+  cache: {
+    ttl: +(process.env.CACHE_TTL_IN_MILISECONDS ?? 30000), // 5 minutes
+  },
 }

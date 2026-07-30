@@ -48,4 +48,16 @@ export class DateTimeUtil {
 
         return seconds * 1000;
     }
+
+    static seconds(value: number): number {
+        return value * 1000;
+    }
+
+    static minutes(value: number): number {
+        return value * 60 * 1000;
+    }
+
+    static hours(value: number): number {
+        return value * 60 * 60 * 1000;
+    }
 }

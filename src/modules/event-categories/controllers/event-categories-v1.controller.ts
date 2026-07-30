@@ -9,9 +9,13 @@ import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../../shared/decorators/public.decorator';
 import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
+import { CachePrefix } from '../../../infrastructures/modules/cache/decorators/cache-prefix.decorator';
+import { Cacheable } from '../../../infrastructures/modules/cache/decorators/cacheable.decorator';
+import { DateTimeUtil } from '../../../shared/utils/datetime.util';
 
 @ApiTags('Event Categories')
 @Controller({ path: "event-categories", version: "1" })
+@CachePrefix("event-categories")
 export class EventCategoriesV1Controller {
   constructor(
     private readonly eventCategoriesV1Service: EventCategoriesV1Service
@@ -22,6 +26,7 @@ export class EventCategoriesV1Controller {
   //=================================================
   @Public()
   @Get('')
+  @Cacheable()
   async getAllEventCategories(
     @Query() paginationDto: EventCategoriesPaginateV1Request
   ): Promise<IPaginationData<EventCategoriesV1Response>> {
@@ -35,6 +40,7 @@ export class EventCategoriesV1Controller {
 
   @Public()
   @Get(':categoryId')
+  @Cacheable(DateTimeUtil.hours(1))
   async getEventCategoriesById(
     @Param('categoryId') categoryId: string
   ): Promise<EventCategoriesV1Response> {

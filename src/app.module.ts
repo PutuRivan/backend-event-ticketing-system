@@ -22,6 +22,8 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.ad
 import { join } from 'path';
 import { ResponseInterceptor } from './infrastructures/interceptors/response.interceptor';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { HttpCacheInterceptor } from './infrastructures/modules/cache/interceptors/http-cache.interceptor';
+import { CacheModule } from './infrastructures/modules/cache/cache.module';
 
 @Module({
   imports: [
@@ -81,7 +83,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     DashboardModule,
     LogActivityModule,
 
-    QueueModule
+    QueueModule,
+    CacheModule
   ],
   providers: [
     {
@@ -103,6 +106,10 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpCacheInterceptor,
     },
   ],
 })
