@@ -20,13 +20,18 @@ import { QrCodeService } from "../../../infrastructures/modules/qr/services/qr-c
 @Injectable()
 export class TicketsV1Service {
   private queueTicketsService: IQueueService
-
+  private storageLocalService: IStorageService
   constructor(
     private readonly ticketV1Repository: TicketsV1Repository,
     private readonly queueFactoryService: QueueFactoryService,
+    private readonly storageFactoryService: StorageFactoryService
   ) {
     this.queueTicketsService = this.queueFactoryService.createQueueService(
       QueueName.Tickets
+    )
+
+    this.storageLocalService = this.storageFactoryService.createStorageService(
+      StorageDriver.Local
     )
   }
 
@@ -105,5 +110,27 @@ export class TicketsV1Service {
         pdfPath: pdfPath
       }
     );
+  }
+
+  async downloadTicket(ticketId: string) {
+    const ticket =
+      await this.findOneByID(ticketId);
+
+
+    if (!ticket.pdfPath) {
+      throw new Error('Ticket PDF not generated');
+    }
+
+
+    const buffer =
+      await this.storageLocalService.getFromStorage({
+        path: ticket.pdfPath,
+      });
+
+
+    return {
+      filename: `${ticket.ticketNumber}.pdf`,
+      buffer,
+    };
   }
 }

@@ -1,5 +1,5 @@
 import { TicketsV1Service } from './../services/tickets-v1.service';
-import { Body, Controller, Get, Param, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Query, StreamableFile } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { TicketPaginateV1Request } from '../dtos/requests/tickets-paginate-v1.request';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
@@ -37,5 +37,14 @@ export class TicketsV1Controller {
   }
 
   @Get(':ticketId/download')
-  async downloadTicket() { }
+  async downloadTicket(
+    @Param('ticketId') ticketId: string
+  ): Promise<StreamableFile> {
+    const result = await this.ticketsV1Service.downloadTicket(ticketId)
+
+    return new StreamableFile(result.buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${result.filename}"`,
+    });
+  }
 }

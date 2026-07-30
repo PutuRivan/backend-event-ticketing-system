@@ -63,7 +63,6 @@ export class StorageLocalService implements IStorageService {
 
     const filePath =
       path.join(
-        this.rootPath,
         data.path
       );
 
