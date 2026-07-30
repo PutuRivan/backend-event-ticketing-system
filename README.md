@@ -1,98 +1,293 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🎟️ Event Ticketing System — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A robust and scalable REST API for an **Event Ticketing System**, built with [NestJS](https://nestjs.com/) and [TypeScript](https://www.typescriptlang.org/). The API handles everything from user authentication and event management to order processing, ticket generation (with QR codes & PDFs), and email notifications.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 📋 Table of Contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture Overview](#-architecture-overview)
+- [Prerequisites](#-prerequisites)
+- [Getting Started](#-getting-started)
+- [Environment Variables](#-environment-variables)
+- [Running the Application](#-running-the-application)
+- [Database Migrations](#-database-migrations)
+- [API Documentation](#-api-documentation)
+- [Project Structure](#-project-structure)
+- [Available Scripts](#-available-scripts)
+- [Running Tests](#-running-tests)
 
-## Project setup
+---
 
-```bash
-$ npm install
+## ✨ Features
+
+- 🔐 **JWT Authentication** — Access token & refresh token strategy with role-based access control (RBAC)
+- 🗓️ **Event Management** — Full CRUD for events and event categories
+- 🛒 **Order Processing** — Create and manage ticket orders with auto-expiry via background queues
+- 🎫 **Ticket Generation** — QR code & PDF ticket generation upon successful order
+- 📧 **Email Notifications** — Transactional emails via SMTP with Handlebars templates
+- 📊 **Dashboard** — Aggregated analytics and statistics
+- 📝 **Activity Logging** — Automatic request/response activity logging via interceptors
+- 📦 **File Storage** — Pluggable storage driver supporting local, MinIO, and GCS
+- 📄 **Swagger UI** — Auto-generated interactive API documentation
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer         | Technology                                                                        |
+| ------------- | --------------------------------------------------------------------------------- |
+| Framework     | [NestJS](https://nestjs.com/) v11                                                 |
+| Language      | TypeScript v5                                                                     |
+| Database      | PostgreSQL via [TypeORM](https://typeorm.io/)                                     |
+| Cache / Queue | Redis via [BullMQ](https://docs.bullmq.io/)                                       |
+| Mailer        | Nodemailer + [@nestjs-modules/mailer](https://github.com/nest-modules/mailer)     |
+| Validation    | [Zod](https://zod.dev/) via [nestjs-zod](https://github.com/risenforces/nestjs-zod) |
+| Auth          | Passport.js + JWT                                                                 |
+| PDF Generation| [pdf-lib](https://pdf-lib.js.org/)                                                |
+| QR Codes      | [qrcode](https://github.com/soldair/node-qrcode)                                  |
+| API Docs      | [Swagger / OpenAPI](https://swagger.io/)                                          |
+| Dev Tooling   | ESLint, Prettier, Jest                                                            |
+
+---
+
+## 🏗️ Architecture Overview
+
+```
+src/
+├── modules/              # Business domain modules
+│   ├── auth/             # Authentication (login, register, refresh, forgot password)
+│   ├── user/             # User profile management
+│   ├── events/           # Event CRUD
+│   ├── event-categories/ # Event category management
+│   ├── orders/           # Order creation & management
+│   ├── tickets/          # Ticket issuance & QR/PDF generation
+│   ├── dashboard/        # Analytics & statistics
+│   └── log-activity/     # Activity log records
+│
+├── infrastructures/      # Cross-cutting infrastructure concerns
+│   ├── databases/        # TypeORM config & migrations
+│   ├── interceptors/     # Global response & log-activity interceptors
+│   └── modules/
+│       ├── jwt/          # JWT strategy, guards, and enums
+│       ├── queue/        # BullMQ queue definitions & processors
+│       ├── mail/         # Mailer service & Handlebars templates
+│       └── storage/      # Storage driver abstraction (local / MinIO / GCS)
+│
+└── shared/               # Shared utilities, decorators, and helpers
 ```
 
-## Compile and run the project
+---
+
+## ✅ Prerequisites
+
+Make sure the following are installed on your machine:
+
+- **Node.js** >= 18.x
+- **npm** >= 9.x
+- **PostgreSQL** >= 14
+- **Docker & Docker Compose** (for Redis and Mailpit)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/PutuRivan/backend-event-ticketing-system
+cd backend-event-ticketing-system
 ```
 
-## Run tests
+### 2. Install dependencies
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+### 3. Configure environment variables
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Copy the example environment file and fill in your values:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cp .env.example .env
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+See [Environment Variables](#-environment-variables) for a full description of each variable.
 
-## Resources
+### 4. Start infrastructure services (Redis + Mailpit)
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+docker-compose up -d
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+This will spin up:
+- **Redis** on port `6379` — used for the BullMQ job queue
+- **Mailpit** on port `8025` (web UI) and `1025` (SMTP) — used to catch emails locally
 
-## Support
+### 5. Run database migrations
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npm run migration:run
+```
 
-## Stay in touch
+### 6. Start the development server
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npm run start:dev
+```
 
-## License
+The API will be available at `http://localhost:3000/api/v1`.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## 🔧 Environment Variables
+
+Copy `.env.example` to `.env` and configure the following variables:
+
+| Variable | Description | Example |
+|---|---|---|
+| `NODE_ENV` | Application environment | `development` |
+| `APP_NAME` | Application name | `EventTicketing` |
+| `APP_KEY` | Application secret key | `base64:randomkey` |
+| `APP_PORT` | HTTP server port | `3000` |
+| `APP_URL` | Public base URL | `http://localhost:3000` |
+| `DB_HOST` | PostgreSQL host | `127.0.0.1` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_DATABASE` | Database name | `event_ticketing` |
+| `DB_USERNAME` | Database user | `postgres` |
+| `DB_PASSWORD` | Database password | `secret` |
+| `DB_POOL_SIZE` | Connection pool size | `10` |
+| `JWT_SECRET` | Secret for access tokens | `your_jwt_secret` |
+| `JWT_EXPIRES_IN_SECONDS` | Access token TTL (seconds) | `86400` |
+| `JWT_REFRESH_TOKEN_SECRET` | Secret for refresh tokens | `your_refresh_secret` |
+| `JWT_REFRESH_TOKEN_EXPIRES_IN_SECONDS` | Refresh token TTL | `604800` |
+| `JWT_FORGOT_PASSWORD_SECRET` | Secret for password-reset tokens | `your_forgot_secret` |
+| `JWT_FORGOT_PASSWORD_EXPIRES_IN_SECONDS` | Password-reset token TTL | `3600` |
+| `REDIS_HOST` | Redis host | `127.0.0.1` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `REDIS_PASSWORD` | Redis password (optional) | `` |
+| `STORAGE_DRIVER` | Storage driver | `local` \| `minio` \| `gcs` |
+| `STORAGE_ROOT_PATH` | Local storage root directory | `storage` |
+| `STORAGE_FILE_MAX_SIZE_IN_BYTES` | Max upload size | `10485760` |
+| `QUEUE_BACKOFF_DELAY_IN_SECONDS` | Retry backoff delay | `5` |
+| `QUEUE_RETRY_ATTEMPTS` | Max job retry attempts | `3` |
+| `QUEUE_EXPIRE_ORDER_IN_SECONDS` | Order auto-expiry timeout | `900` |
+
+---
+
+## ▶️ Running the Application
+
+```bash
+# Development (watch mode)
+npm run start:dev
+
+# Debug mode
+npm run start:debug
+
+# Production
+npm run build
+npm run start:prod
+```
+
+---
+
+## 🗃️ Database Migrations
+
+TypeORM is used for all database schema management.
+
+```bash
+# Run all pending migrations
+npm run migration:run
+
+# Revert the last migration
+npm run migration:revert
+
+# Show migration status
+npm run migration:show
+
+# Create a new empty migration file
+npm run migration:create -- src/infrastructures/databases/migrations/MigrationName
+
+# Generate a migration from entity changes
+npm run migration:generate -- src/infrastructures/databases/migrations/MigrationName
+```
+
+---
+
+## 📖 API Documentation
+
+Interactive Swagger UI is available at:
+
+```
+http://localhost:3000/docs
+```
+
+The API uses **URI versioning**. All endpoints are prefixed with `/api/v1`.
+
+### Authentication
+
+Most endpoints require a **Bearer JWT token** in the `Authorization` header:
+
+```
+Authorization: Bearer <access_token>
+```
+
+Use the `/api/v1/auth/login` endpoint to obtain an access token and refresh token.
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── src/
+│   ├── app.module.ts          # Root application module
+│   ├── config.ts              # Centralized app configuration
+│   ├── main.ts                # Application entry point (bootstrap)
+│   ├── modules/               # Feature modules
+│   ├── infrastructures/       # Infrastructure & cross-cutting concerns
+│   └── shared/                # Shared utilities and helpers
+├── storage/                   # Local file storage (gitignored)
+├── test/                      # E2E tests
+├── docker-compose.yml         # Docker services (Redis, Mailpit)
+├── .env.example               # Example environment configuration
+├── nest-cli.json              # NestJS CLI configuration
+└── tsconfig.json              # TypeScript configuration
+```
+
+---
+
+## 📜 Available Scripts
+
+| Script | Description |
+|---|---|
+| `npm run start:dev` | Start in watch/development mode |
+| `npm run start:debug` | Start in debug mode |
+| `npm run start:prod` | Start the compiled production build |
+| `npm run build` | Compile TypeScript to `dist/` |
+| `npm run lint` | Run ESLint and auto-fix issues |
+| `npm run format` | Run Prettier on source files |
+| `npm run migration:run` | Apply pending database migrations |
+| `npm run migration:revert` | Revert the last migration |
+| `npm run migration:generate` | Generate a migration from entity diff |
+
+---
+
+## 🧪 Running Tests
+
+```bash
+# Unit tests
+npm run test
+
+# Unit tests in watch mode
+npm run test:watch
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage report
+npm run test:cov
+```
