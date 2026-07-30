@@ -67,4 +67,8 @@ export const config = {
   cache: {
     ttl: +(process.env.CACHE_TTL_IN_MILISECONDS ?? 30000), // 5 minutes
   },
+  throttle: {
+    ttlInSeconds: +(process.env.THROTTLE_TTL_IN_SECONDS ?? 60), // 60 seconds
+    limit: +(process.env.THROTTLE_LIMIT ?? 10), // 10 requests per window
+  },
 }

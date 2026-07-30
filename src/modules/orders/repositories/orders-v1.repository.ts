@@ -25,7 +25,7 @@ export class OrdersV1Repository extends Repository<IOrder> {
   async paginate(request: OrderPaginateV1Request) {
     const alias = this.metadata.name
     const ALLOWED_SORT = new Map<string, string>([
-      ['created_at', `${alias}.createedAt`],
+      ['created_at', `${alias}.createdAt`],
       ['deleted_at', `${alias}.deletedAt`],
       ['updated_at', `${alias}.updatedAt`]
     ])
@@ -33,7 +33,7 @@ export class OrdersV1Repository extends Repository<IOrder> {
     const query = this
       .createQueryBuilder(this.metadata.name)
       .leftJoinAndSelect(`${alias}.tickets`, 'tickets')
-      .leftJoinAndSelect(`${alias}.events`, 'events')
+      .leftJoinAndSelect(`${alias}.event`, 'event')
 
     QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORT)
 

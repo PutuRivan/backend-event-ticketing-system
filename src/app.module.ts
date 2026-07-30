@@ -25,6 +25,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { HttpCacheInterceptor } from './infrastructures/modules/cache/interceptors/http-cache.interceptor';
 import { CacheModule } from './infrastructures/modules/cache/cache.module';
 import { CacheInvalidateInterceptor } from './infrastructures/modules/cache/interceptors/cache-invalidate.interceptor';
+import { CustomThrottlerGuard } from './infrastructures/modules/throttle/guards/custom-throttler.guard';
+import { ThrottleModule } from './infrastructures/modules/throttle/throttle.module';
 
 @Module({
   imports: [
@@ -85,7 +87,8 @@ import { CacheInvalidateInterceptor } from './infrastructures/modules/cache/inte
     LogActivityModule,
 
     QueueModule,
-    CacheModule
+    CacheModule,
+    ThrottleModule
   ],
   providers: [
     {
@@ -115,6 +118,10 @@ import { CacheInvalidateInterceptor } from './infrastructures/modules/cache/inte
     {
       provide: APP_INTERCEPTOR,
       useClass: CacheInvalidateInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
     },
   ],
 })
