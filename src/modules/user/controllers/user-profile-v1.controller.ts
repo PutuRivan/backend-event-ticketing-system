@@ -6,16 +6,20 @@ import { CurrentUser } from "../../../shared/decorators/current-user.decorator";
 import type { IUser } from "../../../infrastructures/databases/interfaces/user.interface";
 import { UserV1Response } from "../dtos/responses/user-v1.response";
 import { UserUpdateV1Request } from "../dtos/requests/user-update-v1.request";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { JwtAuthTypeEnum } from '../../../infrastructures/modules/jwt/enums/jwt-type.enum';
 import { UserProfileUpdateV1Request } from "../dtos/requests/user-profile-update-v1.request";
 
 @ApiTags('Profile')
+@ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
 @Controller({ path: 'profile', version: '1' })
 export class UserProfileV1Controller {
   constructor(private readonly userV1Service: UserV1Service) { }
 
   @Roles(RoleEnum.USER)
   @Get('')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, type: UserV1Response })
   async getProfile(
     @CurrentUser() user: IUser,
   ): Promise<UserV1Response> {
@@ -26,6 +30,8 @@ export class UserProfileV1Controller {
 
   @Roles(RoleEnum.USER)
   @Patch('')
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiResponse({ status: 200, type: UserV1Response })
   async updateProfile(
     @CurrentUser() user: IUser,
     @Body() dto: UserProfileUpdateV1Request,

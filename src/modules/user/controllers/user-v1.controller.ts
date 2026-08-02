@@ -1,4 +1,3 @@
-import { Entity } from 'typeorm';
 import { UserV1Response } from '../dtos/responses/user-v1.response';
 import { UserV1Service } from '../services/user-v1.service';
 import { UserPaginateV1Request } from './../dtos/requests/user-paginate-v1.request';
@@ -15,7 +14,8 @@ import {
 } from '@nestjs/common';
 import { UserUpdateV1Request } from '../dtos/requests/user-update-v1.request';
 import { IPaginationData } from '../../../shared/interfaces/paginate-response.interface';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthTypeEnum } from '../../../infrastructures/modules/jwt/enums/jwt-type.enum';
 import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
 import { IJwtPayload } from '../../../infrastructures/modules/jwt/interfaces/jwt-payload.interface';
@@ -23,6 +23,7 @@ import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
 import type { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
 
 @ApiTags('User')
+@ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
 @Controller({ path: 'users', version: '1' })
 export class UserV1Controller {
   constructor(private readonly userV1Service: UserV1Service) { }
@@ -32,6 +33,8 @@ export class UserV1Controller {
   //=================================================
   @Roles(RoleEnum.ADMIN)
   @Get()
+  @ApiOperation({ summary: 'Get all users (Admin)' })
+  @ApiResponse({ status: 200 })
   async getAllUsers(
     @Query() paginationDto: UserPaginateV1Request
   ): Promise<IPaginationData<UserV1Response>> {
@@ -45,6 +48,9 @@ export class UserV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Get(':userId')
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiResponse({ status: 200 })
+  @ApiParam({ name: 'userId', description: 'User ID' })
   async getById(
     @Param('userId') userId: string
   ): Promise<UserV1Response> {
@@ -55,6 +61,9 @@ export class UserV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Patch(':userId')
+  @ApiOperation({ summary: 'Update user by ID' })
+  @ApiResponse({ status: 200 })
+  @ApiParam({ name: 'userId', description: 'User ID' })
   async updateById(
     @Param('userId') userId: string,
     @Body() dataUser: UserUpdateV1Request
@@ -66,6 +75,9 @@ export class UserV1Controller {
 
   @Roles(RoleEnum.ADMIN)
   @Delete(':userId')
+  @ApiOperation({ summary: 'Delete user by ID' })
+  @ApiResponse({ status: 200 })
+  @ApiParam({ name: 'userId', description: 'User ID' })
   async deleteById(
     @Param('userId') userId: string
   ): Promise<UserV1Response | null> {

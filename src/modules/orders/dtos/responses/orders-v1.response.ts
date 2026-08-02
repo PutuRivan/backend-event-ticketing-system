@@ -6,14 +6,22 @@ import { OrderStatusEnum } from "../../../../shared/enums/order-status.enum";
 import { EventV1Response } from "../../../events/dtos/responses/event-v1.response";
 import { TicketV1Response } from "../../../tickets/dtos/responses/tickets-v1.response";
 import { UserV1Response } from "../../../user/dtos/responses/user-v1.response";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class OrderV1Response {
+  @ApiProperty()
   totalPrice: number;
+  @ApiProperty()
   status: OrderStatusEnum;
+  @ApiPropertyOptional()
   expiredAt?: Date | null;
+  @ApiPropertyOptional()
   paidAt?: Date | null;
+  @ApiProperty()
   user: UserV1Response;
+  @ApiProperty()
   event: EventV1Response
+  @ApiProperty()
   tickets: TicketV1Response[];
 
   constructor(entity: IOrder) {

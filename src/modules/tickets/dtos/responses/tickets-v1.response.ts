@@ -1,11 +1,16 @@
 import { IOrder } from "../../../../infrastructures/databases/interfaces/order.interface";
 import { ITicket } from "../../../../infrastructures/databases/interfaces/ticket.interface";
 import { OrderV1Response } from "../../../orders/dtos/responses/orders-v1.response";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class TicketV1Response {
+  @ApiProperty()
   ticketNumber: string
+  @ApiProperty()
   qrCodePath: string
+  @ApiProperty()
   pdfPath: string
+  @ApiProperty()
   order: OrderV1Response
 
   constructor(entity: ITicket) {

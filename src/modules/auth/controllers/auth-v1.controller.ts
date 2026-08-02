@@ -1,4 +1,4 @@
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoginV1Request } from '../dtos/requests/login-v1.request';
 import { RegisterV1Request } from '../dtos/requests/register-v1.request';
 import { LoginV1Response } from '../dtos/responses/login-v1.response';
@@ -15,6 +15,8 @@ export class AuthV1Controller {
   ) { }
 
   @Public()
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({ status: 201, description: 'User registered successfully', type: RegisterV1Response })
   @Post('register')
   async register(
     @Body() request: RegisterV1Request
@@ -24,6 +26,8 @@ export class AuthV1Controller {
   }
 
   @Public()
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({ status: 201, description: 'User logged in successfully', type: LoginV1Response })
   @Post('login')
   async login(
     @Body() request: LoginV1Request

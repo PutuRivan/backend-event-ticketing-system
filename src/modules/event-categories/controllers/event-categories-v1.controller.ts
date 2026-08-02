@@ -5,7 +5,8 @@ import { eventCategoriesUpdateV1Request } from '../dtos/requests/event-categorie
 import { EventCategoriesV1Response } from '../dtos/responses/event-categories-v1.response';
 import { EventCategoriesV1Service } from './../services/event-categories-v1.service';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { JwtAuthTypeEnum } from '../../../infrastructures/modules/jwt/enums/jwt-type.enum';
 import { Public } from '../../../shared/decorators/public.decorator';
 import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
@@ -26,6 +27,8 @@ export class EventCategoriesV1Controller {
   //                    PUBLIC
   //=================================================
   @Public()
+  @ApiOperation({ summary: 'Get all event categories' })
+  @ApiResponse({ status: 200 })
   @Get('')
   @Cacheable(DateTimeUtil.hours(1))
   async getAllEventCategories(
@@ -40,6 +43,9 @@ export class EventCategoriesV1Controller {
   }
 
   @Public()
+  @ApiOperation({ summary: 'Get event category by ID' })
+  @ApiParam({ name: 'categoryId', description: 'Category ID' })
+  @ApiResponse({ status: 200 })
   @Get(':categoryId')
   @Cacheable(DateTimeUtil.hours(1))
   async getEventCategoriesById(
@@ -54,6 +60,9 @@ export class EventCategoriesV1Controller {
   //                    ADMIN
   //=================================================
   @Roles(RoleEnum.ADMIN)
+  @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
+  @ApiOperation({ summary: 'Create a new event category' })
+  @ApiResponse({ status: 201 })
   @Post('')
   @InvalidateCache()
   async createEventCategories(
@@ -65,6 +74,10 @@ export class EventCategoriesV1Controller {
   }
 
   @Roles(RoleEnum.ADMIN)
+  @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
+  @ApiOperation({ summary: 'Update event category by ID' })
+  @ApiParam({ name: 'categoryId', description: 'Category ID' })
+  @ApiResponse({ status: 200 })
   @Patch(':categoryId')
   @InvalidateCache()
   async updateEventCategoriesById(
@@ -77,6 +90,10 @@ export class EventCategoriesV1Controller {
   }
 
   @Roles(RoleEnum.ADMIN)
+  @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
+  @ApiOperation({ summary: 'Delete event category by ID' })
+  @ApiParam({ name: 'categoryId', description: 'Category ID' })
+  @ApiResponse({ status: 200 })
   @Delete(':categoryId')
   @InvalidateCache()
   async deleteEventCategoriesById(

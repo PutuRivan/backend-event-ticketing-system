@@ -3,17 +3,28 @@ import { IEvent } from "../../../../infrastructures/databases/interfaces/event.i
 import { IOrder } from "../../../../infrastructures/databases/interfaces/order.interface";
 import { EventCategoriesV1Response } from "../../../event-categories/dtos/responses/event-categories-v1.response";
 import { OrderV1Response } from "../../../orders/dtos/responses/orders-v1.response";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class EventV1Response {
+  @ApiProperty()
   id: string
+  @ApiProperty()
   title: string
+  @ApiProperty()
   description: string
+  @ApiProperty({ type: () => EventCategoriesV1Response })
   category: EventCategoriesV1Response;
+  @ApiProperty()
   location: string
+  @ApiProperty()
   eventDate: Date
+  @ApiProperty()
   ticketPrice: number
+  @ApiProperty()
   quota: number
+  @ApiProperty()
   published: boolean
+  @ApiProperty({ type: () => [OrderV1Response] })
   orders: OrderV1Response[];
 
   constructor(entity: IEvent) {

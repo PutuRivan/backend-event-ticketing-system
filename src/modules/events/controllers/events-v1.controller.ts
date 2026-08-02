@@ -1,4 +1,5 @@
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { JwtAuthTypeEnum } from '../../../infrastructures/modules/jwt/enums/jwt-type.enum';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
 import { eventCreateV1Request } from '../dtos/requests/event-v1-create.request';
 import { EventPaginateV1Request } from '../dtos/requests/event-v1-paginate.request';
@@ -26,6 +27,8 @@ export class EventsV1Controller {
   //                    PUBLIC
   //=================================================
   @Public()
+  @ApiOperation({ summary: 'Get all events' })
+  @ApiResponse({ status: 200 })
   @Get('')
   @Cacheable(DateTimeUtil.hours(1))
   async getAllEvent(
@@ -40,6 +43,9 @@ export class EventsV1Controller {
   }
 
   @Public()
+  @ApiOperation({ summary: 'Get event by ID' })
+  @ApiParam({ name: 'eventId', description: 'Event ID' })
+  @ApiResponse({ status: 200 })
   @Get(':eventId')
   @Cacheable(DateTimeUtil.hours(1))
   async getEventById(
@@ -54,6 +60,9 @@ export class EventsV1Controller {
   //                    ADMIN
   //=================================================
   @Roles(RoleEnum.ADMIN)
+  @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
+  @ApiOperation({ summary: 'Create a new event' })
+  @ApiResponse({ status: 201 })
   @Post('')
   @InvalidateCache()
   async createEvent(
@@ -65,6 +74,10 @@ export class EventsV1Controller {
   }
 
   @Roles(RoleEnum.ADMIN)
+  @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
+  @ApiOperation({ summary: 'Update event by ID' })
+  @ApiParam({ name: 'eventId', description: 'Event ID' })
+  @ApiResponse({ status: 200 })
   @Patch(':eventId')
   @InvalidateCache()
   async updateEventById(
@@ -77,6 +90,10 @@ export class EventsV1Controller {
   }
 
   @Roles(RoleEnum.ADMIN)
+  @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
+  @ApiOperation({ summary: 'Delete event by ID' })
+  @ApiParam({ name: 'eventId', description: 'Event ID' })
+  @ApiResponse({ status: 200 })
   @Delete(':eventId')
   @InvalidateCache()
   async deleteEventById(
@@ -88,6 +105,10 @@ export class EventsV1Controller {
   }
 
   @Roles(RoleEnum.ADMIN)
+  @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
+  @ApiOperation({ summary: 'Publish event' })
+  @ApiParam({ name: 'eventId', description: 'Event ID' })
+  @ApiResponse({ status: 200 })
   @Patch(':eventId/publish')
   @InvalidateCache()
   async updateEventToPublish(
@@ -99,6 +120,10 @@ export class EventsV1Controller {
   }
 
   @Roles(RoleEnum.ADMIN)
+  @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
+  @ApiOperation({ summary: 'Unpublish event' })
+  @ApiParam({ name: 'eventId', description: 'Event ID' })
+  @ApiResponse({ status: 200 })
   @Patch(':eventId/unpublish')
   @InvalidateCache()
   async updateEventToUnpublish(

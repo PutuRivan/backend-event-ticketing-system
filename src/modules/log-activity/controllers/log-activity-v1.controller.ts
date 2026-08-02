@@ -1,4 +1,5 @@
 import { Controller, Get, Query } from "@nestjs/common";
+import { ApiExcludeController } from "@nestjs/swagger";
 import { LogActivityV1Service } from "../services/log-activity-v1.service";
 import { Permission } from "../../../shared/decorators/permission.decorator";
 import { Resource } from "../../../shared/constants/resource.constant";
@@ -7,6 +8,7 @@ import { LogActivityPaginateV1Request } from "../dtos/requests/log-activity-pagi
 import { IPaginationData } from "../../../shared/interfaces/paginate-response.interface";
 import { LogActivityV1Response } from "../dtos/responses/log-activity-v1.response";
 
+@ApiExcludeController()
 @Controller({ path: 'log-activities', version: '1' })
 export class LogActivityV1Controller {
   constructor(

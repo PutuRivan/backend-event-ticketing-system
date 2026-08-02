@@ -1,7 +1,9 @@
 import { UserV1Response } from "../../../user/dtos/responses/user-v1.response";
 import { IRegisterResult } from "../../shared/interfaces/register-result.interface";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class RegisterV1Response {
+  @ApiProperty({ type: () => UserV1Response })
   user: UserV1Response
 
   constructor(entity: IRegisterResult) {

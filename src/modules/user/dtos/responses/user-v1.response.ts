@@ -1,13 +1,19 @@
 import { IOrder } from "../../../../infrastructures/databases/interfaces/order.interface";
 import { IUser } from "../../../../infrastructures/databases/interfaces/user.interface";
 import { RoleEnum } from "../../../../shared/enums/role.enum";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class UserV1Response {
+    @ApiProperty()
     id: string;
+    @ApiProperty()
     name: string;
+    @ApiProperty()
     email: string;
 
+    @ApiPropertyOptional()
     roles?: RoleEnum;
+    @ApiProperty()
     orders: IOrder[]
 
     constructor(entity: IUser) {
