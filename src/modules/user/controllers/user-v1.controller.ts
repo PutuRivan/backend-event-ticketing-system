@@ -6,6 +6,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -18,9 +20,6 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@ne
 import { JwtAuthTypeEnum } from '../../../infrastructures/modules/jwt/enums/jwt-type.enum';
 import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
-import { IJwtPayload } from '../../../infrastructures/modules/jwt/interfaces/jwt-payload.interface';
-import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
-import type { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
 
 @ApiTags('User')
 @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
@@ -78,6 +77,7 @@ export class UserV1Controller {
   @ApiOperation({ summary: 'Delete user by ID' })
   @ApiResponse({ status: 200 })
   @ApiParam({ name: 'userId', description: 'User ID' })
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteById(
     @Param('userId') userId: string
   ): Promise<UserV1Response | null> {

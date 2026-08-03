@@ -5,6 +5,8 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class TicketV1Response {
   @ApiProperty()
+  id: string
+  @ApiProperty()
   ticketNumber: string
   @ApiProperty()
   qrCodePath: string
@@ -14,6 +16,7 @@ export class TicketV1Response {
   order: OrderV1Response
 
   constructor(entity: ITicket) {
+    this.id = entity.id
     this.ticketNumber = entity.ticketNumber
     this.qrCodePath = entity.qrCodePath
     this.pdfPath = entity.pdfPath

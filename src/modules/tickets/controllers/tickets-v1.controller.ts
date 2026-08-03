@@ -1,5 +1,5 @@
 import { TicketsV1Service } from './../services/tickets-v1.service';
-import { Body, Controller, Get, Param, Query, StreamableFile } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Query, StreamableFile } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiProduces, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { JwtAuthTypeEnum } from '../../../infrastructures/modules/jwt/enums/jwt-type.enum';
 import { TicketPaginateV1Request } from '../dtos/requests/tickets-paginate-v1.request';
@@ -47,11 +47,13 @@ export class TicketsV1Controller {
     return TicketV1Response.MapEntity(data)
   }
 
+  @Roles(RoleEnum.ADMIN, RoleEnum.USER)
   @Get(':ticketId/download')
   @ApiOperation({ summary: 'Download ticket as PDF' })
   @ApiResponse({ status: 200, description: 'PDF file of the ticket' })
   @ApiParam({ name: 'ticketId', description: 'Ticket ID' })
   @ApiProduces('application/pdf')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async downloadTicket(
     @Param('ticketId') ticketId: string
   ): Promise<StreamableFile> {

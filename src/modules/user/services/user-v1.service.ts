@@ -1,5 +1,5 @@
 import { DataSource, QueryFailedError } from 'typeorm';
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { UserPaginateV1Request } from "../dtos/requests/user-paginate-v1.request";
 import { UserV1Repository } from '../repositories/user-v1.repository';
 import { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
@@ -37,21 +37,21 @@ export class UserV1Service {
       throw new NotFoundException('User Not Found');
     }
 
+    const payload = Object.fromEntries(
+      Object.entries({
+        name: dataUpdate.name,
+        email: dataUpdate.email,
+        role: dataUpdate.role
+      }).filter(([, v]) => v !== undefined),
+    );
 
-    if (dataUpdate.name !== undefined) {
-      user.name = dataUpdate.name;
+    const isUpdated = await this.userV1Repository.updateUser(id, payload)
+
+    if (!isUpdated) {
+      throw new BadRequestException("")
     }
 
-    if (dataUpdate.email !== undefined) {
-      user.email = dataUpdate.email;
-    }
-
-    if (dataUpdate.role !== undefined) {
-      user.role = dataUpdate.role;
-    }
-
-
-    return await this.userV1Repository.updateUser(user);
+    return this.findOneById(id)
   }
 
   async updateProfile(
@@ -64,15 +64,20 @@ export class UserV1Service {
       throw new NotFoundException('User Not Found');
     }
 
-    if (dataUpdate.name !== undefined) {
-      user.name = dataUpdate.name;
+    const payload = Object.fromEntries(
+      Object.entries({
+        name: dataUpdate.name,
+        email: dataUpdate.email,
+      }).filter(([, v]) => v !== undefined),
+    );
+
+    const update = await this.userV1Repository.updateUser(id, payload)
+
+    if (!update) {
+      throw new BadRequestException("")
     }
 
-    if (dataUpdate.email !== undefined) {
-      user.email = dataUpdate.email;
-    }
-
-    return await this.userV1Repository.updateUser(user);
+    return this.findOneById(id)
   }
 
   async softDeleteById(id: string): Promise<Boolean> {

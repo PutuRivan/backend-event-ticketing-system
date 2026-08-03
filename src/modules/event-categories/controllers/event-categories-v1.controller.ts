@@ -4,7 +4,7 @@ import { EventCategoriesPaginateV1Request } from '../dtos/requests/event-categor
 import { eventCategoriesUpdateV1Request } from '../dtos/requests/event-categories-update-v1.request';
 import { EventCategoriesV1Response } from '../dtos/responses/event-categories-v1.response';
 import { EventCategoriesV1Service } from './../services/event-categories-v1.service';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthTypeEnum } from '../../../infrastructures/modules/jwt/enums/jwt-type.enum';
 import { Public } from '../../../shared/decorators/public.decorator';
@@ -95,6 +95,7 @@ export class EventCategoriesV1Controller {
   @ApiParam({ name: 'categoryId', description: 'Category ID' })
   @ApiResponse({ status: 200 })
   @Delete(':categoryId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @InvalidateCache()
   async deleteEventCategoriesById(
     @Param('categoryId') categoryId: string

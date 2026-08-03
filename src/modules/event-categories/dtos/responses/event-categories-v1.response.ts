@@ -1,6 +1,6 @@
 import { EventV1Response } from './../../../events/dtos/responses/event-v1.response';
 import { IEventCategories } from "../../../../infrastructures/databases/interfaces/event-categories.interface";
-import { IEvent } from "../../../../infrastructures/databases/interfaces/event.interface";
+import type { IEvent } from "../../../../infrastructures/databases/interfaces/event.interface";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class EventCategoriesV1Response {
@@ -10,14 +10,14 @@ export class EventCategoriesV1Response {
   name: string
   @ApiProperty()
   description: string
-  @ApiPropertyOptional({ type: () => [EventV1Response] })
-  events?: EventV1Response[]
+  @ApiPropertyOptional()
+  events?: IEvent[]
 
   constructor(entity: IEventCategories) {
     this.id = entity.id
     this.name = entity.name
     this.description = entity.description
-    this.events = EventV1Response.MapEntities(entity.events)
+    this.events = entity.events
   }
 
   static MapEntity(entity: IEventCategories): EventCategoriesV1Response {

@@ -4,7 +4,7 @@ import { RegisterV1Request } from '../dtos/requests/register-v1.request';
 import { LoginV1Response } from '../dtos/responses/login-v1.response';
 import { RegisterV1Response } from '../dtos/responses/register-v1.response';
 import { AuthV1Service } from './../services/auth-v1.service';
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { Public } from '../../../shared/decorators/public.decorator';
 
 @ApiTags('Auth')
@@ -29,6 +29,7 @@ export class AuthV1Controller {
   @ApiOperation({ summary: 'Login user' })
   @ApiResponse({ status: 201, description: 'User logged in successfully', type: LoginV1Response })
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async login(
     @Body() request: LoginV1Request
   ): Promise<LoginV1Response> {

@@ -78,8 +78,14 @@ export class UserV1Repository extends Repository<IUser> {
   }
 
   async updateUser(
-    user: Users,
-  ): Promise<Users> {
-    return await this.save(user);
+    id: string,
+    user: Partial<Users>,
+  ): Promise<Boolean> {
+
+    const update = await this.update(id, user)
+    if (update.affected === 0) {
+      return false;
+    }
+    return true
   }
 }

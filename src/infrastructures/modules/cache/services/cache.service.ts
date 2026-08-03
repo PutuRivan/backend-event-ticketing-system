@@ -15,7 +15,21 @@ export class CacheService {
 
   async deleteByPrefix(prefix: string) {
     const keyv: any = this.cacheManager.stores[0];
-    const redis = keyv._store._client;
+    if (!keyv || !keyv._store) {
+      return;
+    }
+
+    const redis = typeof keyv._store.getClient === 'function'
+      ? await keyv._store.getClient()
+      : (keyv._store.client || keyv._store._client);
+
+    if (!redis) {
+      return;
+    }
+
+    if (!redis.isOpen && typeof redis.connect === 'function') {
+      await redis.connect();
+    }
 
     let cursor = "0";
 

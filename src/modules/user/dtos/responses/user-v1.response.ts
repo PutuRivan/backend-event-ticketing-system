@@ -10,17 +10,16 @@ export class UserV1Response {
     name: string;
     @ApiProperty()
     email: string;
-
-    @ApiPropertyOptional()
-    roles?: RoleEnum;
     @ApiProperty()
-    orders: IOrder[]
+    role: RoleEnum;
+    @ApiPropertyOptional()
+    orders?: IOrder[]
 
     constructor(entity: IUser) {
         this.id = entity.id;
         this.name = entity.name;
         this.email = entity.email;
-        this.roles = entity.role
+        this.role = entity.role
         this.orders = entity.orders
     }
 

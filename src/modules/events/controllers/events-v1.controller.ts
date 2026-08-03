@@ -6,7 +6,7 @@ import { EventPaginateV1Request } from '../dtos/requests/event-v1-paginate.reque
 import { EventUpdateV1Request } from '../dtos/requests/event-v1-update.request';
 import { EventV1Response } from '../dtos/responses/event-v1.response';
 import { EventV1Service } from './../services/events-v1.service';
-import { Controller, Get, Post, Patch, Delete, Query, Body, Param } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Query, Body, Param, HttpCode, HttpStatus } from "@nestjs/common";
 import { Public } from '../../../shared/decorators/public.decorator';
 import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
@@ -95,6 +95,7 @@ export class EventsV1Controller {
   @ApiParam({ name: 'eventId', description: 'Event ID' })
   @ApiResponse({ status: 200 })
   @Delete(':eventId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @InvalidateCache()
   async deleteEventById(
     @Param('eventId') eventId: string

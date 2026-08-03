@@ -1,4 +1,4 @@
-import { IEventCategories } from "../../../../infrastructures/databases/interfaces/event-categories.interface";
+import type { IEventCategories } from "../../../../infrastructures/databases/interfaces/event-categories.interface";
 import { IEvent } from "../../../../infrastructures/databases/interfaces/event.interface";
 import { IOrder } from "../../../../infrastructures/databases/interfaces/order.interface";
 import { EventCategoriesV1Response } from "../../../event-categories/dtos/responses/event-categories-v1.response";
@@ -12,8 +12,8 @@ export class EventV1Response {
   title: string
   @ApiProperty()
   description: string
-  @ApiProperty({ type: () => EventCategoriesV1Response })
-  category: EventCategoriesV1Response;
+  @ApiProperty()
+  category: IEventCategories;
   @ApiProperty()
   location: string
   @ApiProperty()
@@ -31,13 +31,13 @@ export class EventV1Response {
     this.id = entity.id
     this.title = entity.title
     this.description = entity.description
-    this.category = EventCategoriesV1Response.MapEntity(entity.category)
+    this.category = entity.category
     this.location = entity.location
     this.eventDate = entity.eventDate
     this.ticketPrice = entity.ticketPrice
     this.quota = entity.quota
     this.published = entity.published
-    this.orders = OrderV1Response.MapEntities(entity.orders)
+    this.orders = entity.orders
   }
 
   static MapEntity(entity: IEvent): EventV1Response {

@@ -1,11 +1,10 @@
-import { IEvent } from "../../../../infrastructures/databases/interfaces/event.interface";
+import type { IEvent } from "../../../../infrastructures/databases/interfaces/event.interface";
 import { IOrder } from "../../../../infrastructures/databases/interfaces/order.interface";
 import { ITicket } from "../../../../infrastructures/databases/interfaces/ticket.interface";
-import { IUser } from "../../../../infrastructures/databases/interfaces/user.interface";
+import type { IUser } from "../../../../infrastructures/databases/interfaces/user.interface";
 import { OrderStatusEnum } from "../../../../shared/enums/order-status.enum";
 import { EventV1Response } from "../../../events/dtos/responses/event-v1.response";
 import { TicketV1Response } from "../../../tickets/dtos/responses/tickets-v1.response";
-import { UserV1Response } from "../../../user/dtos/responses/user-v1.response";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class OrderV1Response {
@@ -18,20 +17,20 @@ export class OrderV1Response {
   @ApiPropertyOptional()
   paidAt?: Date | null;
   @ApiProperty()
-  user: UserV1Response;
+  user: IUser;
   @ApiProperty()
-  event: EventV1Response
+  event: IEvent
   @ApiProperty()
-  tickets: TicketV1Response[];
+  tickets: ITicket[];
 
   constructor(entity: IOrder) {
-    this.user = UserV1Response.MapEntity(entity.user)
-    this.event = EventV1Response.MapEntity(entity.event)
+    this.user = entity.user
+    this.event = entity.event
     this.totalPrice = entity.totalPrice
     this.status = entity.status
     this.expiredAt = entity.expiredAt
     this.paidAt = entity.paidAt
-    this.tickets = TicketV1Response.MapEntities(entity.tickets)
+    this.tickets = entity.tickets
   }
 
   static MapEntity(entity: IOrder): OrderV1Response {

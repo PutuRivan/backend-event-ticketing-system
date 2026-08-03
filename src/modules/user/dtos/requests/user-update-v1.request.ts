@@ -4,7 +4,7 @@ import { RoleEnum } from '../../../../shared/enums/role.enum';
 import { UserProfileUpdateV1Schema } from './user-profile-update-v1.request';
 
 export const UserUpdateV1Schema = UserProfileUpdateV1Schema.extend({
-    role: z.enum(RoleEnum),
+    role: z.enum(RoleEnum).optional(),
 })
 
 export class UserUpdateV1Request extends ZodUtils.createCamelCaseDto(
