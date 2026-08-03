@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ZodUtils } from "../../../../shared/utils/zod.util";
 
 const LoginV1Schema = z.object({
-  email: z.string(),
+  email: z.string().email(),
   password: z.string()
 })
 
