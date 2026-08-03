@@ -116,7 +116,16 @@ export class EventV1Repository extends Repository<Events> {
     return query
   }
 
-  async updateEvent(entity: Events): Promise<Events> {
-    return await this.save(entity)
+  async updateEvent(
+    id: string,
+    entity: Partial<Events>
+  ): Promise<boolean> {
+    const update = await this.update(id, entity)
+
+    if (!update) {
+      return false
+    }
+
+    return true;
   }
 }

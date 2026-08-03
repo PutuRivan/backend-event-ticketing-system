@@ -63,8 +63,15 @@ export class EventCategoriesV1Repository extends Repository<EventCategories> {
   }
 
   async updateEventCategory(
-    entity: EventCategories,
-  ): Promise<EventCategories> {
-    return await this.save(entity);
+    id: string,
+    entity: Partial<EventCategories>,
+  ): Promise<boolean> {
+    const update = await this.update(id, entity)
+
+    if (!update) {
+      return false
+    }
+
+    return true;
   }
 }

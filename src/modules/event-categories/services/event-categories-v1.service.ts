@@ -2,7 +2,7 @@ import { QueryFailedError } from 'typeorm';
 import { IEventCategories } from '../../../infrastructures/databases/interfaces/event-categories.interface';
 import { EventCategoriesPaginateV1Request } from '../dtos/requests/event-categories-paginate-v1.request';
 import { EventCategoriesV1Repository } from './../repositories/event-categories-v1.repository';
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { EventCategoriesCreateV1Request } from '../dtos/requests/event-categories-create-v1.request';
 import { eventCategoriesUpdateV1Request } from '../dtos/requests/event-categories-update-v1.request';
 
@@ -36,18 +36,20 @@ export class EventCategoriesV1Service {
       throw new NotFoundException('Category Not Found');
     }
 
-    Object.assign(eventCategory, {
-      ...(dataUpdate.name !== undefined && {
+    const payload = Object.fromEntries(
+      Object.entries({
         name: dataUpdate.name,
-      }),
-      ...(dataUpdate.description !== undefined && {
         description: dataUpdate.description,
-      }),
-    });
-
-    return await this.eventCategoriesV1Repository.updateEventCategory(
-      eventCategory,
+      }).filter(([, v]) => v !== undefined),
     );
+
+    const isUpdate = await this.eventCategoriesV1Repository.updateEventCategory(id, payload)
+
+    if (!isUpdate) {
+      throw new BadRequestException("Failed")
+    }
+
+    return await this.findOneById(id)
   }
 
   async softDeleteById(id: string): Promise<Boolean> {
