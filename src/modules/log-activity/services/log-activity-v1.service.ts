@@ -1,4 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { ErrorMessageConstant } from "../../../shared/constants/message.constant";
 import { LogActivityV1Repository } from "../repositories/log-activity-v1.repository";
 import { LogActivityPaginateV1Request } from "../dtos/requests/log-activity-paginate-v1.request";
 import { ILogActivity } from "../../../infrastructures/databases/interfaces/log-activity.interface";
@@ -19,10 +20,18 @@ export class LogActivityV1Service {
   }
 
   async findOneById(id: string): Promise<ILogActivity> {
-    return this.logActivityRepository.findOneOrFail({
+    const log = await this.logActivityRepository.findOne({
       where: { id },
       relations: ['user'],
     });
+
+    if (!log) {
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('LogActivity'),
+      );
+    }
+
+    return log;
   }
 
   hideSensitiveData(metaData: any): any {

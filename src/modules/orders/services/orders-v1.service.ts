@@ -1,6 +1,7 @@
 import { EventV1Repository } from '../../events/repositories/events-v1.repository';
 import { OrdersV1Repository } from './../repositories/orders-v1.repository';
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { ErrorMessageConstant } from '../../../shared/constants/message.constant';
 import { IOrder } from '../../../infrastructures/databases/interfaces/order.interface';
 import { OrderPaginateV1Request } from '../dtos/requests/orders-paginate-v1.request';
 import { ordersCreateV1Request } from '../dtos/requests/orders-create-v1.request';
@@ -50,14 +51,16 @@ export class OrdersV1Service {
     }
 
     if (!event.published) {
-      throw new BadRequestException('Event Not Published')
+      throw new UnprocessableEntityException(
+        ErrorMessageConstant.DataEntityInInvalidState('Event', 'published'),
+      );
     }
 
     const totalReserved = await this.ordersV1Repository.getTotalReservedTicket(dataOrder.eventId)
 
     if (totalReserved + dataOrder.quantity > event.quota) {
-      throw new BadRequestException(
-        "Ticket quota exceeded"
+      throw new UnprocessableEntityException(
+        'Ticket quota exceeded',
       );
     }
 
@@ -96,7 +99,9 @@ export class OrdersV1Service {
     const order = await this.ordersV1Repository.findOneById(id)
 
     if (!order) {
-      throw new NotFoundException("Order Not Found")
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('Order'),
+      );
     }
 
     return order
@@ -112,7 +117,9 @@ export class OrdersV1Service {
     );
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('Order'),
+      );
     }
 
     return order;
@@ -139,9 +146,9 @@ export class OrdersV1Service {
     }
     // Cek Order Status
     if (order.status !== OrderStatusEnum.PENDING) {
-      throw new BadRequestException(
-        "Payment Failed"
-      )
+      throw new UnprocessableEntityException(
+        'Payment Failed',
+      );
     }
 
     order.status = OrderStatusEnum.PAID;
@@ -181,9 +188,9 @@ export class OrdersV1Service {
     }
 
     if (order.status !== OrderStatusEnum.PENDING) {
-      throw new BadRequestException(
-        "Order cannot be cancelled"
-      )
+      throw new UnprocessableEntityException(
+        'Order cannot be cancelled',
+      );
     }
 
     order.status = OrderStatusEnum.CANCELLED;

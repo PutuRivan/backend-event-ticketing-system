@@ -1,10 +1,11 @@
-import { DataSource, QueryFailedError } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { UserPaginateV1Request } from "../dtos/requests/user-paginate-v1.request";
 import { UserV1Repository } from '../repositories/user-v1.repository';
 import { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
 import { UserUpdateV1Request } from '../dtos/requests/user-update-v1.request';
 import { UserProfileUpdateV1Request } from '../dtos/requests/user-profile-update-v1.request';
+import { ErrorMessageConstant } from '../../../shared/constants/message.constant';
 
 @Injectable()
 export class UserV1Service {
@@ -20,7 +21,9 @@ export class UserV1Service {
     const user = await this.userV1Repository.findOneById(id);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('User'),
+      );
     }
 
     return user;
@@ -34,7 +37,9 @@ export class UserV1Service {
     const user = await this.findOneById(id);
 
     if (!user) {
-      throw new NotFoundException('User Not Found');
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('User'),
+      );
     }
 
     const payload = Object.fromEntries(
@@ -48,7 +53,7 @@ export class UserV1Service {
     const isUpdated = await this.userV1Repository.updateUser(id, payload)
 
     if (!isUpdated) {
-      throw new BadRequestException("")
+      throw new BadRequestException(ErrorMessageConstant.BadRequest)
     }
 
     return this.findOneById(id)
@@ -61,7 +66,9 @@ export class UserV1Service {
     const user = await this.findOneById(id);
 
     if (!user) {
-      throw new NotFoundException('User Not Found');
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('User'),
+      );
     }
 
     const payload = Object.fromEntries(
@@ -74,22 +81,15 @@ export class UserV1Service {
     const update = await this.userV1Repository.updateUser(id, payload)
 
     if (!update) {
-      throw new BadRequestException("")
+      throw new BadRequestException(ErrorMessageConstant.BadRequest)
     }
 
     return this.findOneById(id)
   }
 
   async softDeleteById(id: string): Promise<Boolean> {
-    const status = await this.userV1Repository.softDelete({ id })
-    if (status.affected && status.affected < 1) {
-      throw new QueryFailedError(
-        'Error, Data not deleted',
-        undefined,
-        new Error(),
-      );
-    }
-
+    await this.findOneById(id);
+    await this.userV1Repository.softDelete({ id })
     return true;
   }
 }

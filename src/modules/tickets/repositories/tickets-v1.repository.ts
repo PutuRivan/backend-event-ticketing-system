@@ -64,8 +64,8 @@ export class TicketsV1Repository extends Repository<ITicket> {
     };
   }
 
-  async findOneById(id: string): Promise<ITicket> {
-    return await this.findOneOrFail({
+  async findOneById(id: string): Promise<ITicket | null> {
+    return await this.findOne({
       where: { id }
     })
   }

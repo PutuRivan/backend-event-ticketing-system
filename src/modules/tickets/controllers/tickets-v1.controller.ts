@@ -53,7 +53,6 @@ export class TicketsV1Controller {
   @ApiResponse({ status: 200, description: 'PDF file of the ticket' })
   @ApiParam({ name: 'ticketId', description: 'Ticket ID' })
   @ApiProduces('application/pdf')
-  @HttpCode(HttpStatus.NO_CONTENT)
   async downloadTicket(
     @Param('ticketId') ticketId: string
   ): Promise<StreamableFile> {

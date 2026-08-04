@@ -3,10 +3,12 @@ import {
     ExecutionContext,
     ForbiddenException,
     Injectable,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLE_KEY } from '../../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../../shared/enums/role.enum';
+import { ErrorMessageConstant } from '../../../../shared/constants/message.constant';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -40,8 +42,8 @@ export class RoleGuard implements CanActivate {
 
 
         if (!user) {
-            throw new ForbiddenException(
-                'User not authenticated',
+            throw new UnauthorizedException(
+                ErrorMessageConstant.Unauthorized,
             );
         }
 

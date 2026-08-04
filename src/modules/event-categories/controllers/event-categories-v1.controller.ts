@@ -93,7 +93,7 @@ export class EventCategoriesV1Controller {
   @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
   @ApiOperation({ summary: 'Delete event category by ID' })
   @ApiParam({ name: 'categoryId', description: 'Category ID' })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 204, description: 'Category deleted successfully' })
   @Delete(':categoryId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @InvalidateCache()

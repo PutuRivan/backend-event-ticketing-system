@@ -1,10 +1,10 @@
-import { QueryFailedError } from 'typeorm';
 import { IEventCategories } from '../../../infrastructures/databases/interfaces/event-categories.interface';
 import { EventCategoriesPaginateV1Request } from '../dtos/requests/event-categories-paginate-v1.request';
 import { EventCategoriesV1Repository } from './../repositories/event-categories-v1.repository';
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { EventCategoriesCreateV1Request } from '../dtos/requests/event-categories-create-v1.request';
 import { eventCategoriesUpdateV1Request } from '../dtos/requests/event-categories-update-v1.request';
+import { ErrorMessageConstant } from '../../../shared/constants/message.constant';
 
 @Injectable()
 export class EventCategoriesV1Service {
@@ -17,7 +17,13 @@ export class EventCategoriesV1Service {
   }
 
   async findOneById(id: string): Promise<IEventCategories> {
-    return await this.eventCategoriesV1Repository.findOneById(id)
+    const category = await this.eventCategoriesV1Repository.findOneById(id);
+    if (!category) {
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('Category'),
+      );
+    }
+    return category;
   }
 
   async createCategory(data: EventCategoriesCreateV1Request): Promise<IEventCategories> {
@@ -46,22 +52,15 @@ export class EventCategoriesV1Service {
     const isUpdate = await this.eventCategoriesV1Repository.updateEventCategory(id, payload)
 
     if (!isUpdate) {
-      throw new BadRequestException("Failed")
+      throw new BadRequestException(ErrorMessageConstant.BadRequest)
     }
 
     return await this.findOneById(id)
   }
 
   async softDeleteById(id: string): Promise<Boolean> {
-    const status = await this.eventCategoriesV1Repository.softDelete({ id })
-    if (status.affected && status.affected < 1) {
-      throw new QueryFailedError(
-        'Error, Data not deleted',
-        undefined,
-        new Error
-      )
-    }
-
+    await this.findOneById(id);
+    await this.eventCategoriesV1Repository.softDelete({ id })
     return true
   }
 }

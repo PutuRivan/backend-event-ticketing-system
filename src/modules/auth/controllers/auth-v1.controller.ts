@@ -42,7 +42,7 @@ export class AuthV1Controller {
 
   @Public()
   @ApiOperation({ summary: 'Refresh Token' })
-  @ApiResponse({ status: 200, description: 'Refresg Token in successfully', type: LoginV1Response })
+  @ApiResponse({ status: 200, description: 'Refresh Token in successfully', type: LoginV1Response })
   @UseGuards(JwtRefreshAuthGuard)
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)

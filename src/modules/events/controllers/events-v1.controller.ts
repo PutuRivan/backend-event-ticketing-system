@@ -93,7 +93,7 @@ export class EventsV1Controller {
   @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
   @ApiOperation({ summary: 'Delete event by ID' })
   @ApiParam({ name: 'eventId', description: 'Event ID' })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 204, description: 'Event deleted successfully' })
   @Delete(':eventId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @InvalidateCache()

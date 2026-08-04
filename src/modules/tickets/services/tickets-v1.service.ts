@@ -1,4 +1,5 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { ErrorMessageConstant } from "../../../shared/constants/message.constant";
 import { TicketsV1Repository } from "../repositories/tickets-v1.repository";
 import QRCode from "qrcode";
 import { randomUUID } from "crypto";
@@ -49,7 +50,7 @@ export class TicketsV1Service {
   }
 
   async findOneByID(id: string): Promise<ITicket> {
-    return await this.ticketV1Repository.findOneOrFail({
+    const ticket = await this.ticketV1Repository.findOne({
       where: {
         id
       },
@@ -60,6 +61,14 @@ export class TicketsV1Service {
         }
       }
     });
+
+    if (!ticket) {
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('Ticket'),
+      );
+    }
+
+    return ticket;
   }
 
   async createTicket(orderId: string) {
@@ -139,8 +148,7 @@ export class TicketsV1Service {
       }
     );
 
-
-    return await this.ticketV1Repository.findOneOrFail({
+    const ticket = await this.ticketV1Repository.findOne({
       where: {
         id: ticketId,
       },
@@ -152,6 +160,13 @@ export class TicketsV1Service {
       },
     });
 
+    if (!ticket) {
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('Ticket'),
+      );
+    }
+
+    return ticket;
   }
 
   async updatePdf(
@@ -173,7 +188,7 @@ export class TicketsV1Service {
 
 
     if (!ticket.pdfPath) {
-      throw new Error('Ticket PDF not generated');
+      throw new UnprocessableEntityException(ErrorMessageConstant.FileNotFound);
     }
 
 

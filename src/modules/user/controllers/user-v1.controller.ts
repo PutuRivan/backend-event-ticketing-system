@@ -75,7 +75,7 @@ export class UserV1Controller {
   @Roles(RoleEnum.ADMIN)
   @Delete(':userId')
   @ApiOperation({ summary: 'Delete user by ID' })
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 204, description: 'User deleted successfully' })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteById(

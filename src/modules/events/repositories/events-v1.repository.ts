@@ -122,7 +122,7 @@ export class EventV1Repository extends Repository<IEvent> {
   ): Promise<boolean> {
     const update = await this.update(id, entity)
 
-    if (!update) {
+    if (update.affected === 0) {
       return false
     }
 

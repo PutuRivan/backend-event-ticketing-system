@@ -1,6 +1,6 @@
 import { DateTimeUtil } from './../../../shared/utils/datetime.util';
 import { UserV1Repository } from './../../user/repositories/user-v1.repository';
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from '@nestjs/jwt';
 import { HashUtil } from '../../../shared/utils/hash.util';
 import { randomUUID } from 'crypto';
@@ -14,11 +14,12 @@ import { IRegisterResult } from '../shared/interfaces/register-result.interface'
 import { ILoginResult } from '../shared/interfaces/login-result.interface';
 import { IUserToken } from '../../../infrastructures/databases/interfaces/user-token.interface';
 import { IAuthResultData } from '../shared/interfaces/auth-result-data.interface';
+import { ErrorMessageConstant } from '../../../shared/constants/message.constant';
 
 @Injectable()
 export class AuthV1Service {
   constructor(
-    private readonly UserV1Repository: UserV1Repository,
+    private readonly userV1Repository: UserV1Repository,
     private readonly userTokenV1Repository: UserTokenV1Repository,
     private readonly jwtService: JwtService,
   ) { }
@@ -75,44 +76,40 @@ export class AuthV1Service {
 
   async register(name: string, email: string, password: string): Promise<IRegisterResult> {
     const existingUser =
-      await this.UserV1Repository.findOneByEmail(email);
+      await this.userV1Repository.findOneByEmail(email);
 
 
     if (existingUser) {
       throw new ConflictException(
-        'Email already registered',
+        ErrorMessageConstant.DataEntityFieldAlreadyExists(
+          'Users',
+          'email',
+        ),
       );
     }
 
     const hashedPassword =
       await HashUtil.hashBcryptPassword(password);
 
-
-    if (!name) {
-      throw new BadRequestException(
-        'Name is required'
-      );
-    }
-
     const user =
-      this.UserV1Repository.create({
+      this.userV1Repository.create({
         name,
         email,
         password: hashedPassword,
       });
 
 
-    await this.UserV1Repository.save(user);
+    await this.userV1Repository.save(user);
 
     return { user }
   }
 
   async login(email: string, password: string): Promise<ILoginResult> {
-    const user = await this.UserV1Repository.findOneByEmail(email)
+    const user = await this.userV1Repository.findOneByEmail(email)
 
     if (!user) {
       throw new UnauthorizedException(
-        'Invalid credentials'
+        ErrorMessageConstant.InvalidCredentials
       );
     }
 
@@ -120,7 +117,7 @@ export class AuthV1Service {
 
     if (!isPasswordValid) {
       throw new UnauthorizedException(
-        'Invalid credentials'
+        ErrorMessageConstant.InvalidCredentials
       );
     }
 
@@ -153,6 +150,11 @@ export class AuthV1Service {
   }
 
   async refreshToken(userRefreshToken: IUserToken): Promise<IAuthResultData> {
+    if (!userRefreshToken.user) {
+      throw new UnauthorizedException(
+        ErrorMessageConstant.InvalidOrExpiredToken,
+      );
+    }
     const token = await this.generateToken(userRefreshToken.user!);
 
     return {

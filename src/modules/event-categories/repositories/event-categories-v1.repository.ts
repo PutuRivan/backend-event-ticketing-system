@@ -56,8 +56,8 @@ export class EventCategoriesV1Repository extends Repository<EventCategories> {
     return await this.save(entity);
   }
 
-  async findOneById(id: string): Promise<IEventCategories> {
-    return await this.findOneOrFail({
+  async findOneById(id: string): Promise<IEventCategories | null> {
+    return await this.findOne({
       where: { id }
     })
   }
@@ -68,7 +68,7 @@ export class EventCategoriesV1Repository extends Repository<EventCategories> {
   ): Promise<boolean> {
     const update = await this.update(id, entity)
 
-    if (!update) {
+    if (update.affected === 0) {
       return false
     }
 

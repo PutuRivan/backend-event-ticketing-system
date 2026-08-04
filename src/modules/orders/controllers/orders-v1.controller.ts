@@ -1,5 +1,5 @@
 import { OrdersV1Service } from './../services/orders-v1.service';
-import { Body, Controller, Get, Param, Post, Query, Request } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Request } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { JwtAuthTypeEnum } from '../../../infrastructures/modules/jwt/enums/jwt-type.enum';
 import { OrderPaginateV1Request } from '../dtos/requests/orders-paginate-v1.request';
@@ -69,7 +69,8 @@ export class OrdersV1Controller {
   @Roles(RoleEnum.USER)
   @Post(':orderId/pay')
   @ApiOperation({ summary: 'Pay for an order' })
-  @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 200 })
+  @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'orderId', description: 'Order ID' })
   async paymentOrder(
     @Param('orderId') orderId: string
@@ -82,7 +83,8 @@ export class OrdersV1Controller {
   @Roles(RoleEnum.USER)
   @Post(':orderId/cancel')
   @ApiOperation({ summary: 'Cancel an order' })
-  @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 200 })
+  @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'orderId', description: 'Order ID' })
   async cancelOrder(
     @Param('orderId') orderId: string

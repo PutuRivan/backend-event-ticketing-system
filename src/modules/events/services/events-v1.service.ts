@@ -5,7 +5,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { eventCreateV1Request } from '../dtos/requests/event-v1-create.request';
 import { IEvent } from '../../../infrastructures/databases/interfaces/event.interface';
 import { EventUpdateV1Request } from '../dtos/requests/event-v1-update.request';
-import { QueryFailedError } from 'typeorm';
+import { ErrorMessageConstant } from '../../../shared/constants/message.constant';
 
 @Injectable()
 export class EventV1Service {
@@ -22,7 +22,7 @@ export class EventV1Service {
     const event = await this.EventV1Repository.findOneById(id)
 
     if (!event) {
-      throw new NotFoundException("Event Not Found")
+      throw new NotFoundException(ErrorMessageConstant.DataEntityNotFound('Event'))
     }
 
     return event
@@ -35,7 +35,7 @@ export class EventV1Service {
     const eventCategory = await this.EventCategoriesV1Repository.findOneById(dataEvent.categoryId)
 
     if (!eventCategory) {
-      throw new NotFoundException('Category Not Found');
+      throw new NotFoundException(ErrorMessageConstant.DataEntityNotFound('Category'));
     }
 
     return await this.EventV1Repository.createEvent(dataEvent)
@@ -66,25 +66,15 @@ export class EventV1Service {
     const isUpdate = await this.EventV1Repository.updateEvent(id, payload)
 
     if (!isUpdate) {
-      throw new BadRequestException("Failed")
+      throw new BadRequestException(ErrorMessageConstant.BadRequest)
     }
 
     return await this.findOneById(id)
   }
 
   async softDeleteById(id: string): Promise<Boolean> {
-    const status = await this.EventV1Repository.softDelete({
-      id
-    })
-
-    if (status.affected && status.affected < 1) {
-      throw new QueryFailedError(
-        'Error, Data not deleted',
-        undefined,
-        new Error
-      )
-    }
-
+    await this.findOneById(id);
+    await this.EventV1Repository.softDelete({ id })
     return true
   }
 
@@ -105,7 +95,7 @@ export class EventV1Service {
     const isUpdate = await this.EventV1Repository.updateEvent(id, payload)
 
     if (!isUpdate) {
-      throw new BadRequestException("Failed")
+      throw new BadRequestException(ErrorMessageConstant.BadRequest)
     }
 
     return await this.findOneById(id)
