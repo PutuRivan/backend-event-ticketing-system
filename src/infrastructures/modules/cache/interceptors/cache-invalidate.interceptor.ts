@@ -19,7 +19,7 @@ export class CacheInvalidateInterceptor
   constructor(
     private readonly reflector: Reflector,
     private readonly cacheService: CacheService,
-  ) {}
+  ) { }
 
 
   intercept(
@@ -55,12 +55,7 @@ export class CacheInvalidateInterceptor
     return next.handle().pipe(
       tap(async () => {
 
-        if(prefix) {
-
-          console.log(
-            "INVALIDATE CACHE:",
-            prefix
-          );
+        if (prefix) {
 
           await this.cacheService.deleteByPrefix(prefix);
 

@@ -27,6 +27,9 @@ import { CacheModule } from './infrastructures/modules/cache/cache.module';
 import { CacheInvalidateInterceptor } from './infrastructures/modules/cache/interceptors/cache-invalidate.interceptor';
 import { CustomThrottlerGuard } from './infrastructures/modules/throttle/guards/custom-throttler.guard';
 import { ThrottleModule } from './infrastructures/modules/throttle/throttle.module';
+import { RemindersModule } from './modules/reminders/reminders.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CronModule } from './infrastructures/modules/cron/cron.module';
 
 @Module({
   imports: [
@@ -77,6 +80,7 @@ import { ThrottleModule } from './infrastructures/modules/throttle/throttle.modu
         },
       },
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     EventCategoriesModule,
@@ -85,8 +89,10 @@ import { ThrottleModule } from './infrastructures/modules/throttle/throttle.modu
     TicketsModule,
     DashboardModule,
     LogActivityModule,
+    RemindersModule,
 
     QueueModule,
+    CronModule,
     CacheModule,
     ThrottleModule
   ],

@@ -11,7 +11,7 @@ import { QueryFilterUtil } from "../../../shared/utils/query-filter.util";
 import { QuerySortingUtil } from "../../../shared/utils/query-sort.util";
 
 @Injectable()
-export class EventV1Repository extends Repository<Events> {
+export class EventV1Repository extends Repository<IEvent> {
   constructor(
     @InjectRepository(Events)
     private readonly repo: Repository<IEvent>,

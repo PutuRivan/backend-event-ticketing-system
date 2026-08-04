@@ -1,5 +1,5 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { QueueMailJob, QueueName, QueueOrderJob, QueueReminderJob, QueueTicketJob } from "../constants/queue.constant";
+import { QueueMailJob, QueueName, QueueOrderJob, QueueTicketJob } from "../constants/queue.constant";
 import { TicketsV1Service } from "../../../../modules/tickets/services/tickets-v1.service";
 import { Job } from "bullmq";
 import { QueueGenerateTicketService } from "../services/queue-generate-ticket.service";
@@ -11,8 +11,6 @@ import { StorageDriver } from "../../storage/constant/storage.constant";
 import { QueueMailService } from "../services/queue-mail.service";
 import { MailSendDto } from "../../mail/dto/mail-send.dto";
 import { MailTemplateFileEnum } from "../../mail/enums/mail-template-file.enum";
-import { QueueReminderService } from "../services/queue-reminder.service";
-import { getReminderSchedules } from "../helpers/reminder.helper"
 import { OrdersV1Service } from "../../../../modules/orders/services/orders-v1.service";
 
 @Processor(QueueName.Tickets, {
@@ -28,7 +26,6 @@ export class QueueTicketProcessor extends WorkerHost {
     private readonly qrCodeService: QrCodeService,
     private readonly storageFactoryService: StorageFactoryService,
     private readonly queueMailService: QueueMailService,
-    private readonly queueReminderService: QueueReminderService,
 
   ) {
     super();
@@ -42,11 +39,6 @@ export class QueueTicketProcessor extends WorkerHost {
   async process(job: Job): Promise<void> {
     try {
       const jobName = job.name
-      console.log(
-        "PROCESS JOB",
-        job.name,
-        job.data
-      );
       switch (jobName) {
 
         case QueueTicketJob.GenerateQrCode: {
@@ -63,39 +55,17 @@ export class QueueTicketProcessor extends WorkerHost {
               buffer: qrBuffer
             });
 
-          const ticket =
-            await this.ticketsV1Service.updateQRCode(
-              job.data.ticketId,
-              qrPath
-            );
+          await this.ticketsV1Service.updateQRCode(
+            job.data.ticketId,
+            qrPath
+          );
 
-          const schedules =
-            getReminderSchedules(
-              ticket.order.event.eventDate
-            );
-          await Promise.allSettled([
-            ...schedules.map((schedule) =>
-              this.queueReminderService.sendToQueue(
-                {
-                  orderId: ticket.order.id,
-                  reminderType: schedule.type,
-                },
-                QueueReminderJob.SendReminder,
-                {
-                  delay: schedule.delay,
-                  jobId:
-                    `${ticket.order.id}-${schedule.type}`,
-                },
-              )
-            ),
-
-            this.queueTicketService.sendToQueue(
-              {
-                ticketId: job.data.ticketId
-              },
-              QueueTicketJob.GeneratePdf
-            )
-          ]);
+          await this.queueTicketService.sendToQueue(
+            {
+              ticketId: job.data.ticketId
+            },
+            QueueTicketJob.GeneratePdf
+          )
 
           break;
         }
@@ -146,10 +116,6 @@ export class QueueTicketProcessor extends WorkerHost {
 
 
           if (isCompleted) {
-            console.log(
-              "QUEUE SEND ORDER EMAIL",
-              ticket.order.id
-            );
             await this.queueTicketService.sendToQueue(
               {
                 orderId: ticket.order.id

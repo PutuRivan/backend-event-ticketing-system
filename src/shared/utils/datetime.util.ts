@@ -60,4 +60,28 @@ export class DateTimeUtil {
     static hours(value: number): number {
         return value * 60 * 60 * 1000;
     }
+
+    static subtractMilliseconds(
+        date: Date,
+        milliseconds: number
+    ): Date {
+
+        return new Date(
+            date.getTime() - milliseconds
+        );
+
+    }
+
+
+    static subtract(
+        date: Date,
+        milliseconds: number
+    ): Date {
+
+        return DateTimeUtil.subtractMilliseconds(
+            date,
+            milliseconds
+        );
+
+    }
 }

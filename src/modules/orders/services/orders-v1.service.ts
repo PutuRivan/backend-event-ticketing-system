@@ -14,6 +14,7 @@ import { DateTimeUtil } from '../../../shared/utils/datetime.util';
 import { IQueueService } from '../../../infrastructures/modules/queue/interfaces/queue-service.interface';
 import { QueueFactoryService } from '../../../infrastructures/modules/queue/services/queue-factory.service';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
+import { RemindersV1Service } from '../../reminders/services/reminders-v1.service';
 
 @Injectable()
 export class OrdersV1Service {
@@ -23,6 +24,7 @@ export class OrdersV1Service {
     private readonly ordersV1Repository: OrdersV1Repository,
     private readonly eventV1Repository: EventV1Repository,
     private readonly ticketsV1Service: TicketsV1Service,
+    private readonly remindersV1Service: RemindersV1Service,
     private readonly queueFactoryService: QueueFactoryService,
   ) {
     this.queueOrderService = this.queueFactoryService.createQueueService(
@@ -151,6 +153,11 @@ export class OrdersV1Service {
     for (let i = 0; i < savedOrder.quantity; i++) {
       await this.ticketsV1Service.createTicket(savedOrder.id);
     }
+
+    await this.remindersV1Service.createReminders(
+      order
+    );
+
 
     return savedOrder;
   }

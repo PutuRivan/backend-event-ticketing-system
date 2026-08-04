@@ -18,8 +18,6 @@ import { StorageModule } from '../storage/storage.module';
 import { MailModule } from '../mail/mail.module';
 import { QueueMailProcessor } from './processors/queue-mail.processor';
 import { QueueMailService } from './services/queue-mail.service';
-import { QueueReminderService } from './services/queue-reminder.service';
-import { QueueReminderProcessor } from './processors/queue-reminder.processor';
 
 @Module({
   imports: [
@@ -42,7 +40,6 @@ import { QueueReminderProcessor } from './processors/queue-reminder.processor';
     QueueTicketProcessor,
     QueueLogActivityProcessor,
     QueueMailProcessor,
-    QueueReminderProcessor,
 
     QueueFactoryService,
 
@@ -50,7 +47,6 @@ import { QueueReminderProcessor } from './processors/queue-reminder.processor';
     QueueGenerateTicketService,
     QueueLogActivityService,
     QueueMailService,
-    QueueReminderService
   ],
   exports: [
     BullModule,
@@ -59,7 +55,6 @@ import { QueueReminderProcessor } from './processors/queue-reminder.processor';
     QueueOrderService,
     QueueGenerateTicketService,
     QueueLogActivityService,
-    QueueReminderService
   ]
 })
 export class QueueModule { }

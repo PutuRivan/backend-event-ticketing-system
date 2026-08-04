@@ -10,6 +10,8 @@ import { EventV1Repository } from '../events/repositories/events-v1.repository';
 import { TicketsModule } from '../tickets/tickets.module';
 import { QueueModule } from '../../infrastructures/modules/queue/queue.module';
 import { Users } from '../../infrastructures/databases/entities/users.entity';
+import { RemindersV1Service } from '../reminders/services/reminders-v1.service';
+import { RemindersModule } from '../reminders/reminders.module';
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { Users } from '../../infrastructures/databases/entities/users.entity';
     ]),
     forwardRef(() => TicketsModule),
     forwardRef(() => QueueModule),
+    RemindersModule
 
   ],
   controllers: [

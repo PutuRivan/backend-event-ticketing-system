@@ -12,6 +12,7 @@ import { IOrder } from "../interfaces/order.interface";
 import { OrderStatusEnum } from "../../../shared/enums/order-status.enum";
 import { Tickets } from "./tickets.entity";
 import { Events } from "./events.entity";
+import { Reminders } from "./reminder.entity";
 
 @Entity("orders")
 @Index(["eventId", "status"])
@@ -73,4 +74,10 @@ export class Orders extends BaseEntity implements IOrder {
 
   @OneToMany(() => Tickets, (ticket) => ticket.order)
   tickets!: Tickets[];
+
+  @OneToMany(
+    () => Reminders,
+    reminder => reminder.order
+  )
+  reminders!: Reminders[];
 }
