@@ -12,6 +12,8 @@ import { IJwtPayload } from '../../../infrastructures/modules/jwt/interfaces/jwt
 import { IJwtRefreshPayload } from '../../../infrastructures/modules/jwt/interfaces/jwt-refresh-payload.interface';
 import { IRegisterResult } from '../shared/interfaces/register-result.interface';
 import { ILoginResult } from '../shared/interfaces/login-result.interface';
+import { IUserToken } from '../../../infrastructures/databases/interfaces/user-token.interface';
+import { IAuthResultData } from '../shared/interfaces/auth-result-data.interface';
 
 @Injectable()
 export class AuthV1Service {
@@ -109,14 +111,17 @@ export class AuthV1Service {
     const user = await this.UserV1Repository.findOneByEmail(email)
 
     if (!user) {
-      throw new ConflictException(
-        'Email doesnt exist',
+      throw new UnauthorizedException(
+        'Invalid credentials'
       );
     }
 
     const isPasswordValid = await HashUtil.comparePassword(password, user.password)
+
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(
+        'Invalid credentials'
+      );
     }
 
     const refreshTokenUuid = randomUUID();
@@ -146,4 +151,22 @@ export class AuthV1Service {
       },
     };
   }
+
+  async refreshToken(userRefreshToken: IUserToken): Promise<IAuthResultData> {
+    const token = await this.generateToken(userRefreshToken.user!);
+
+    return {
+      user: userRefreshToken.user!,
+      token: {
+        accessToken: token,
+        accessTokenExpiresIn: DateTimeUtil.addSeconds(
+          new Date(),
+          this.JWT_EXPIRES_IN_SECONDS,
+        ), // 1 hour
+        refreshToken: userRefreshToken.token,
+        refreshTokenExpiresIn: userRefreshToken.expiresAt,
+      },
+    };
+  }
+
 }

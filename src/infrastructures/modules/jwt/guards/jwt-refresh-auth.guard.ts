@@ -5,4 +5,4 @@ import { JwtAuthTypeEnum } from '../../../../infrastructures/modules/jwt/enums/j
 @Injectable()
 export class JwtRefreshAuthGuard extends AuthGuard(
     JwtAuthTypeEnum.RefreshToken,
-) {}
+) { }

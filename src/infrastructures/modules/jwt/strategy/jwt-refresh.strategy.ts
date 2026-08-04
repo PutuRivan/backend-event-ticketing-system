@@ -13,7 +13,9 @@ export class JwtRefreshStrategy extends PassportStrategy(
     Strategy,
     JwtAuthTypeEnum.RefreshToken,
 ) {
-    constructor(private readonly userTokenV1Repository: UserTokenV1Repository) {
+    constructor(
+        private readonly userTokenV1Repository: UserTokenV1Repository
+    ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
@@ -29,7 +31,6 @@ export class JwtRefreshStrategy extends PassportStrategy(
                 id,
                 UserTokenTypeEnum.RefreshToken,
             );
-
         if (!refreshToken) {
             throw new UnauthorizedException('Unauthorized');
         }

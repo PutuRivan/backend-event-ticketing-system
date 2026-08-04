@@ -4,8 +4,11 @@ import { RegisterV1Request } from '../dtos/requests/register-v1.request';
 import { LoginV1Response } from '../dtos/responses/login-v1.response';
 import { RegisterV1Response } from '../dtos/responses/register-v1.response';
 import { AuthV1Service } from './../services/auth-v1.service';
-import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
 import { Public } from '../../../shared/decorators/public.decorator';
+import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
+import type { IUserToken } from '../../../infrastructures/databases/interfaces/user-token.interface';
+import { JwtRefreshAuthGuard } from '../../../infrastructures/modules/jwt/guards/jwt-refresh-auth.guard';
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -27,7 +30,7 @@ export class AuthV1Controller {
 
   @Public()
   @ApiOperation({ summary: 'Login user' })
-  @ApiResponse({ status: 201, description: 'User logged in successfully', type: LoginV1Response })
+  @ApiResponse({ status: 200, description: 'User logged in successfully', type: LoginV1Response })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
@@ -36,4 +39,19 @@ export class AuthV1Controller {
     const result = await this.authV1Service.login(request.email, request.password)
     return LoginV1Response.MapEntity(result)
   }
+
+  @Public()
+  @ApiOperation({ summary: 'Refresh Token' })
+  @ApiResponse({ status: 200, description: 'Refresg Token in successfully', type: LoginV1Response })
+  @UseGuards(JwtRefreshAuthGuard)
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @CurrentUser() userRefreshToken: IUserToken
+  ): Promise<LoginV1Response> {
+    const result = await this.authV1Service.refreshToken(userRefreshToken)
+
+    return LoginV1Response.MapEntity(result)
+  }
+
 }
