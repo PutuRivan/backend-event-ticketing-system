@@ -130,6 +130,24 @@ export class OrdersV1Repository extends Repository<IOrder> {
     return await this.save(entity)
   }
 
+  async markTicketEmailSent(
+    id: string
+  ): Promise<boolean> {
+
+    const result =
+      await this.update(
+        {
+          id,
+          ticketEmailSent: false,
+        },
+        {
+          ticketEmailSent: true,
+        },
+      );
+
+    return result.affected === 1;
+  }
+
   async findOneByIdAndUserId(
     orderId: string,
     userId: string,

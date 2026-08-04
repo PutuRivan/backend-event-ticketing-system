@@ -20,7 +20,8 @@ export type TQueueOrderJob =
 
 export const QueueTicketJob = {
   GenerateQrCode: 'generate-qr',
-  GeneratePdf: 'generate-pdf'
+  GeneratePdf: 'generate-pdf',
+  SendOrderEmail: 'send-order-email'
 } as const
 export type TQueueTicketJob = typeof QueueTicketJob[keyof typeof QueueTicketJob]
 

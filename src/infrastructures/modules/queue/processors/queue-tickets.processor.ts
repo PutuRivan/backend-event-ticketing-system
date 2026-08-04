@@ -13,6 +13,7 @@ import { MailSendDto } from "../../mail/dto/mail-send.dto";
 import { MailTemplateFileEnum } from "../../mail/enums/mail-template-file.enum";
 import { QueueReminderService } from "../services/queue-reminder.service";
 import { getReminderSchedules } from "../helpers/reminder.helper"
+import { OrdersV1Service } from "../../../../modules/orders/services/orders-v1.service";
 
 @Processor(QueueName.Tickets, {
   concurrency: 5,
@@ -21,6 +22,7 @@ export class QueueTicketProcessor extends WorkerHost {
   private storageService: IStorageService;
   constructor(
     private readonly ticketsV1Service: TicketsV1Service,
+    private readonly ordersV1Service: OrdersV1Service,
     private readonly queueTicketService: QueueGenerateTicketService,
     private readonly pdfService: PdfService,
     private readonly qrCodeService: QrCodeService,
@@ -40,7 +42,11 @@ export class QueueTicketProcessor extends WorkerHost {
   async process(job: Job): Promise<void> {
     try {
       const jobName = job.name
-
+      console.log(
+        "PROCESS JOB",
+        job.name,
+        job.data
+      );
       switch (jobName) {
 
         case QueueTicketJob.GenerateQrCode: {
@@ -133,28 +139,82 @@ export class QueueTicketProcessor extends WorkerHost {
             pdfPath
           );
 
+          const isCompleted =
+            await this.ticketsV1Service.isAllPdfGenerated(
+              ticket.order.id
+            );
+
+
+          if (isCompleted) {
+            console.log(
+              "QUEUE SEND ORDER EMAIL",
+              ticket.order.id
+            );
+            await this.queueTicketService.sendToQueue(
+              {
+                orderId: ticket.order.id
+              },
+              QueueTicketJob.SendOrderEmail
+            );
+
+          }
+
+          break;
+        }
+
+        case QueueTicketJob.SendOrderEmail: {
+          const tickets =
+            await this.ticketsV1Service.findByOrderId(
+              job.data.orderId
+            );
+
+          const order =
+            tickets[0].order;
+
+          if (order.ticketEmailSent) {
+            break;
+          }
+
+          // lock supaya tidak duplicate
+
+          const locked =
+            await this.ordersV1Service.markTicketEmailSent(
+              order.id
+            );
+
+          if (!locked) {
+            break;
+          }
+
+          const attachments =
+            tickets.map(ticket => ({
+              filename:
+                `${ticket.ticketNumber}.pdf`,
+
+              path: this.storageService.getAbsolutePath(
+                ticket.pdfPath
+              )
+
+            }));
+
           await this.queueMailService.sendToQueue<MailSendDto>(
             {
-              to: ticket.order.user.email,
+              to: order.user.email,
               subject: 'Your Event Ticket',
               template: MailTemplateFileEnum.TicketCreated,
               context: {
-                name: ticket.order.user.name,
-                eventName: ticket.order.event.title,
-                ticketNumber: ticket.ticketNumber,
-                eventDate: ticket.order.event.eventDate,
-                location: ticket.order.event.location,
-                quantity: ticket.order.quantity
+                name: order.user.name,
+                eventName: order.event.title,
+                quantity: tickets.length,
+                eventDate: order.event.eventDate,
+                location: order.event.location
               },
-              attachments: [
-                {
-                  filename: 'ticket.pdf',
-                  path: this.storageService.getAbsolutePath(pdfPath),
-                }
-              ],
+              attachments
             },
-            QueueMailJob.MailSend,
+            QueueMailJob.MailSend
           );
+
+
           break;
         }
 

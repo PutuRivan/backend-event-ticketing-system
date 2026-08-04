@@ -147,11 +147,20 @@ export class OrdersV1Service {
 
     const savedOrder = await this.ordersV1Repository.save(order);
 
-    await this.ticketsV1Service.createTicket(
-      savedOrder.id
-    );
+
+    for (let i = 0; i < savedOrder.quantity; i++) {
+      await this.ticketsV1Service.createTicket(savedOrder.id);
+    }
 
     return savedOrder;
+  }
+
+  async markTicketEmailSent(
+    id: string
+  ): Promise<boolean> {
+
+    return this.ordersV1Repository.markTicketEmailSent(id);
+
   }
 
   async cancelOrder(

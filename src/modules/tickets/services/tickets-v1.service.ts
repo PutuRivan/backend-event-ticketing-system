@@ -16,6 +16,7 @@ import { IPaginateData } from "../../../shared/interfaces/paginate-response.inte
 import { TicketV1Response } from "../dtos/responses/tickets-v1.response";
 import { ITicket } from "../../../infrastructures/databases/interfaces/ticket.interface";
 import { QrCodeService } from "../../../infrastructures/modules/qr/services/qr-code.service";
+import { IsNull, Not } from "typeorm";
 
 @Injectable()
 export class TicketsV1Service {
@@ -84,6 +85,47 @@ export class TicketsV1Service {
     return ticket
   }
 
+  async findByOrderId(
+    orderId: string
+  ) {
+
+    return this.ticketV1Repository.find({
+      where: {
+        orderId
+      },
+      relations: {
+        order: {
+          user: true,
+          event: true
+        }
+      }
+    });
+  }
+
+  async isAllPdfGenerated(
+    orderId: string
+  ): Promise<boolean> {
+
+
+    const total =
+      await this.ticketV1Repository.count({
+        where: {
+          orderId
+        }
+      });
+
+
+    const completed =
+      await this.ticketV1Repository.count({
+        where: {
+          orderId,
+          pdfPath: Not(IsNull())
+        }
+      });
+
+
+    return total === completed;
+  }
 
   async updateQRCode(
     ticketId: string,

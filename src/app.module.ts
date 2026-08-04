@@ -38,8 +38,8 @@ import { ThrottleModule } from './infrastructures/modules/throttle/throttle.modu
       },
       prefix: `${config.app.name}:${config.nodeEnv}:bull`,
       defaultJobOptions: {
-        removeOnComplete: false,
-        removeOnFail: false,
+        removeOnComplete: true,
+        removeOnFail: true,
         attempts: config.queue.retryAttempts,
         backoff: {
           type: 'exponential',

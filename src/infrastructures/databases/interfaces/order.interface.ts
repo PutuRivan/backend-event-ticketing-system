@@ -17,6 +17,8 @@ export interface IOrder extends IBaseEntity {
 
   status: OrderStatusEnum;
 
+  ticketEmailSent: boolean;
+
   expiredAt: Date | null;
   paidAt: Date | null;
 

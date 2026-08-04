@@ -53,6 +53,13 @@ export class Orders extends BaseEntity implements IOrder {
   status!: OrderStatusEnum;
 
   @Column({
+    name: 'ticket_email_sent',
+    type: 'boolean',
+    default: false,
+  })
+  ticketEmailSent!: boolean;
+
+  @Column({
     type: "timestamp",
     nullable: true,
   })

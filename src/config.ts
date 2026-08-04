@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  nodeEnv: process.env.NODE_env,
+  nodeEnv: process.env.NODE_ENV,
   app: {
     name: process.env.APP_NAME ?? 'NestJS Boilerplate',
     key: process.env.APP_KEY ?? 'base64:randomkey',
