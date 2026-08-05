@@ -69,4 +69,22 @@ export class TicketsV1Repository extends Repository<ITicket> {
       where: { id }
     })
   }
+
+  async findByOrderId(
+    orderId: string,
+  ): Promise<ITicket[]> {
+
+    return await this.find({
+      where: {
+        orderId,
+      },
+      relations: {
+        order: {
+          user: true,
+          event: true
+        }
+      }
+    });
+
+  }
 }

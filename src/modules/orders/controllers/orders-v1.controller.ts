@@ -10,6 +10,7 @@ import { Roles } from '../../../shared/decorators/role.decorator';
 import { RoleEnum } from '../../../shared/enums/role.enum';
 import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
 import type { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
+import { IOrder } from '../../../infrastructures/databases/interfaces/order.interface';
 
 @ApiTags('Orders')
 @ApiBearerAuth(JwtAuthTypeEnum.AccessToken)
@@ -42,9 +43,10 @@ export class OrdersV1Controller {
   @ApiResponse({ status: 200 })
   @ApiParam({ name: 'orderId', description: 'Order ID' })
   async orderById(
+    @CurrentUser() user: IUser,
     @Param('orderId') orderId: string
   ): Promise<OrderV1Response> {
-    const data = await this.ordersV1Service.findOneById(orderId)
+    const data = await this.ordersV1Service.findOneByIdWithPermission(orderId, user)
 
     return OrderV1Response.MapEntity(data)
   }
@@ -69,13 +71,13 @@ export class OrdersV1Controller {
   @Roles(RoleEnum.USER)
   @Post(':orderId/pay')
   @ApiOperation({ summary: 'Pay for an order' })
-  @ApiResponse({ status: 200 })
-  @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 201 })
   @ApiParam({ name: 'orderId', description: 'Order ID' })
   async paymentOrder(
+    @CurrentUser() user: IUser,
     @Param('orderId') orderId: string
   ) {
-    const data = await this.ordersV1Service.paymentOrder(orderId)
+    const data = await this.ordersV1Service.paymentOrder(user.id, orderId)
 
     return OrderV1Response.MapEntity(data)
   }
@@ -87,9 +89,10 @@ export class OrdersV1Controller {
   @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'orderId', description: 'Order ID' })
   async cancelOrder(
+    @CurrentUser() user: IUser,
     @Param('orderId') orderId: string
   ) {
-    const data = await this.ordersV1Service.cancelOrder(orderId)
+    const data = await this.ordersV1Service.cancelOrder(user.id, orderId)
 
     return OrderV1Response.MapEntity(data)
   }

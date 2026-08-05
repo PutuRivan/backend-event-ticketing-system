@@ -17,7 +17,8 @@ import { IPaginateData } from "../../../shared/interfaces/paginate-response.inte
 import { TicketV1Response } from "../dtos/responses/tickets-v1.response";
 import { ITicket } from "../../../infrastructures/databases/interfaces/ticket.interface";
 import { QrCodeService } from "../../../infrastructures/modules/qr/services/qr-code.service";
-import { IsNull, Not } from "typeorm";
+import { IsNull, Not, QueryRunner } from "typeorm";
+import { Tickets } from "../../../infrastructures/databases/entities/tickets.entity";
 
 @Injectable()
 export class TicketsV1Service {
@@ -71,44 +72,39 @@ export class TicketsV1Service {
     return ticket;
   }
 
-  async createTicket(orderId: string) {
+  async createTicket(
+    orderId: string,
+    queryRunner: QueryRunner,
+  ): Promise<ITicket> {
 
-    const ticketNumber = this.generateTicketNumber();
+    const ticketNumber =
+      this.generateTicketNumber();
+
+
+    const repo =
+      queryRunner.manager.getRepository(
+        Tickets,
+      );
+
 
     const entity =
-      this.ticketV1Repository.create({
+      repo.create({
         orderId,
         ticketNumber,
       });
 
-    const ticket = await this.ticketV1Repository.save(entity);
 
-    await this.queueTicketsService.sendToQueue(
-      {
-        ticketId: ticket.id,
-        ticketNumber: ticket.ticketNumber
-      },
-      QueueTicketJob.GenerateQrCode
-    )
-
-    return ticket
+    return await repo.save(entity);
   }
 
   async findByOrderId(
-    orderId: string
-  ) {
+    orderId: string,
+  ): Promise<ITicket[]> {
 
-    return this.ticketV1Repository.find({
-      where: {
-        orderId
-      },
-      relations: {
-        order: {
-          user: true,
-          event: true
-        }
-      }
-    });
+    return this.ticketV1Repository.findByOrderId(
+      orderId,
+    );
+
   }
 
   async isAllPdfGenerated(

@@ -129,6 +129,7 @@ export class QueueTicketProcessor extends WorkerHost {
         }
 
         case QueueTicketJob.SendOrderEmail: {
+
           const tickets =
             await this.ticketsV1Service.findByOrderId(
               job.data.orderId
@@ -179,7 +180,6 @@ export class QueueTicketProcessor extends WorkerHost {
             },
             QueueMailJob.MailSend
           );
-
 
           break;
         }

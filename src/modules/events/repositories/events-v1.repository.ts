@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { EntityManager, QueryRunner, Repository } from "typeorm";
 import { EventPaginateV1Request } from '../dtos/requests/event-v1-paginate.request';
 import { PaginationUtil } from '../../../shared/utils/pagination.util';
 import { Events } from "../../../infrastructures/databases/entities/events.entity";
@@ -127,5 +127,23 @@ export class EventV1Repository extends Repository<IEvent> {
     }
 
     return true;
+  }
+
+  async findOneByIdWithLock(
+    id: string,
+    queryRunner: QueryRunner,
+  ): Promise<IEvent | null> {
+
+    return queryRunner.manager
+      .getRepository(Events)
+      .createQueryBuilder('event')
+      .setLock('pessimistic_write')
+      .where(
+        'event.id = :id',
+        {
+          id,
+        },
+      )
+      .getOne();
   }
 }

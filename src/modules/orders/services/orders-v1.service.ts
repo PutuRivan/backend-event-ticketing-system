@@ -8,7 +8,7 @@ import { ordersCreateV1Request } from '../dtos/requests/orders-create-v1.request
 import { OrderStatusEnum } from '../../../shared/enums/order-status.enum';
 import { TicketsV1Service } from '../../tickets/services/tickets-v1.service';
 import { InjectQueue } from '@nestjs/bullmq';
-import { QueueName, QueueOrderJob } from '../../../infrastructures/modules/queue/constants/queue.constant';
+import { QueueName, QueueOrderJob, QueueTicketJob } from '../../../infrastructures/modules/queue/constants/queue.constant';
 import { Queue } from 'bullmq';
 import { config } from '../../../config';
 import { DateTimeUtil } from '../../../shared/utils/datetime.util';
@@ -16,9 +16,14 @@ import { IQueueService } from '../../../infrastructures/modules/queue/interfaces
 import { QueueFactoryService } from '../../../infrastructures/modules/queue/services/queue-factory.service';
 import { IPaginateData } from '../../../shared/interfaces/paginate-response.interface';
 import { RemindersV1Service } from '../../reminders/services/reminders-v1.service';
+import { IUser } from '../../../infrastructures/databases/interfaces/user.interface';
+import { RoleEnum } from '../../../shared/enums/role.enum';
+import { DataSource } from 'typeorm';
+import { TransactionUtil } from '../../../shared/utils/transaction.util';
 
 @Injectable()
 export class OrdersV1Service {
+  private queueTicketsService: IQueueService
   private queueOrderService: IQueueService
 
   constructor(
@@ -27,10 +32,15 @@ export class OrdersV1Service {
     private readonly ticketsV1Service: TicketsV1Service,
     private readonly remindersV1Service: RemindersV1Service,
     private readonly queueFactoryService: QueueFactoryService,
+    private readonly dataSource: DataSource,
   ) {
     this.queueOrderService = this.queueFactoryService.createQueueService(
       QueueName.Orders,
     );
+
+    this.queueTicketsService = this.queueFactoryService.createQueueService(
+      QueueName.Tickets
+    )
   }
 
   private readonly ORDER_EXPIRATION_DELAY_SECONDS = config.queue.orderExpirationDelaySeconds
@@ -43,56 +53,101 @@ export class OrdersV1Service {
     userId: string,
     dataOrder: ordersCreateV1Request
   ): Promise<IOrder> {
-    // Cek Event
-    const event = await this.eventV1Repository.findOneById(dataOrder.eventId)
+    const newOrder = await TransactionUtil.execute(
+      this.dataSource,
+      async (queryRunner) => {
 
-    if (!event) {
-      throw new NotFoundException('Event not Found')
-    }
+        /**
+         * Lock event row
+         * Agar request lain yang membeli event yang sama
+         * harus menunggu transaction ini selesai
+         */
+        const event =
+          await this.eventV1Repository.findOneByIdWithLock(
+            dataOrder.eventId,
+            queryRunner,
+          );
 
-    if (!event.published) {
-      throw new UnprocessableEntityException(
-        ErrorMessageConstant.DataEntityInInvalidState('Event', 'published'),
-      );
-    }
 
-    const totalReserved = await this.ordersV1Repository.getTotalReservedTicket(dataOrder.eventId)
+        if (!event) {
+          throw new NotFoundException(
+            'Event not Found',
+          );
+        }
 
-    if (totalReserved + dataOrder.quantity > event.quota) {
-      throw new UnprocessableEntityException(
-        'Ticket quota exceeded',
-      );
-    }
 
-    const totalPrice = event.ticketPrice * dataOrder.quantity
-    const expiredAt = DateTimeUtil.addSeconds(
-      new Date(),
-      this.ORDER_EXPIRATION_DELAY_SECONDS
+        if (!event.published) {
+          throw new UnprocessableEntityException(
+            ErrorMessageConstant.DataEntityInInvalidState(
+              'Event',
+              'published',
+            ),
+          );
+        }
+
+        // Hitung tiket yang sudah reserved
+        const totalReserved =
+          await this.ordersV1Repository.getTotalReservedTicket(
+            dataOrder.eventId,
+            queryRunner,
+          );
+
+
+        //Cek quota
+        if (
+          totalReserved + dataOrder.quantity > event.quota
+        ) {
+          throw new UnprocessableEntityException(
+            'Ticket quota exceeded',
+          );
+        }
+
+
+        const totalPrice =
+          event.ticketPrice * dataOrder.quantity;
+
+
+        const expiredAt =
+          DateTimeUtil.addSeconds(
+            new Date(),
+            this.ORDER_EXPIRATION_DELAY_SECONDS,
+          );
+
+
+        //Insert order
+        const order =
+          await this.ordersV1Repository.createOrder(
+            {
+              userId,
+              eventId: dataOrder.eventId,
+              quantity: dataOrder.quantity,
+              totalPrice,
+              expiredAt,
+            },
+            queryRunner,
+          );
+
+
+        return order;
+      },
     );
 
-    const newOrder = await this.ordersV1Repository.createOrder(
-      {
-        userId,
-        eventId: dataOrder.eventId,
-        quantity: dataOrder.quantity,
-        totalPrice,
-        expiredAt
-      }
-    )
 
+    // Schedule order expiration after configured delay
     await this.queueOrderService.sendToQueue(
       {
-        orderId: newOrder.id
+        orderId: newOrder.id,
       },
       QueueOrderJob.ExpireOrder,
       {
         delay: DateTimeUtil.convertSecondsToMilliseconds(
-          this.ORDER_EXPIRATION_DELAY_SECONDS
-        )
-      }
+          this.ORDER_EXPIRATION_DELAY_SECONDS,
+        ),
+      },
     );
 
-    return newOrder
+
+    return newOrder;
   }
 
   async findOneById(id: string): Promise<IOrder> {
@@ -125,6 +180,34 @@ export class OrdersV1Service {
     return order;
   }
 
+  async findOneByIdWithPermission(
+    orderId: string,
+    user: IUser,
+  ): Promise<IOrder> {
+
+    let order: IOrder | null;
+    const userRole = user.role
+    const adminRole = RoleEnum.ADMIN
+
+    if (userRole === adminRole) {
+      order = await this.ordersV1Repository.findOneById(orderId);
+    } else {
+      order =
+        await this.ordersV1Repository.findOneByIdAndUserId(
+          orderId,
+          user.id,
+        );
+    }
+
+    if (!order) {
+      throw new NotFoundException(
+        ErrorMessageConstant.DataEntityNotFound('Order'),
+      );
+    }
+
+    return order;
+  }
+
   // async paginateByUserId(
   //   userId: string,
   //   paginationDto: OrderPaginateV1Request,
@@ -136,37 +219,112 @@ export class OrdersV1Service {
   // }
 
   async paymentOrder(
-    idOrder: string
+    userId: string,
+    orderId: string,
   ): Promise<IOrder> {
-    // Cek Order
-    const order = await this.ordersV1Repository.findOneById(idOrder)
 
-    if (!order) {
-      throw new NotFoundException('Order Not Found')
-    }
-    // Cek Order Status
-    if (order.status !== OrderStatusEnum.PENDING) {
-      throw new UnprocessableEntityException(
-        'Payment Failed',
-      );
-    }
-
-    order.status = OrderStatusEnum.PAID;
-    order.paidAt = new Date();
-
-    const savedOrder = await this.ordersV1Repository.save(order);
+    const result = await TransactionUtil.execute(
+      this.dataSource,
+      async (queryRunner) => {
+        console.log('TRANSACTION START');
+        // Ambil order + lock row
+        const order =
+          await this.ordersV1Repository.findOneByIdAndUserIdWithLock(
+            orderId,
+            userId,
+            queryRunner,
+          );
 
 
-    for (let i = 0; i < savedOrder.quantity; i++) {
-      await this.ticketsV1Service.createTicket(savedOrder.id);
-    }
+        if (!order) {
+          throw new NotFoundException(
+            'Order Not Found',
+          );
+        }
 
-    await this.remindersV1Service.createReminders(
-      order
+
+        if (
+          order.status !== OrderStatusEnum.PENDING
+        ) {
+          throw new UnprocessableEntityException(
+            'Payment Failed',
+          );
+        }
+
+        // load event setelah lock
+        const event =
+          await this.eventV1Repository.findOneById(
+            order.eventId,
+          );
+        if (!event) {
+          throw new NotFoundException(
+            'Event Not Found',
+          );
+        }
+
+        order.event = event;
+
+        // Update status payment
+        order.status = OrderStatusEnum.PAID;
+        order.paidAt = new Date();
+
+
+        const savedOrder =
+          await this.ordersV1Repository.saveWithTransaction(
+            order,
+            queryRunner,
+          );
+
+        // Create ticket
+        for (let i = 0; i < savedOrder.quantity; i++) {
+          await this.ticketsV1Service.createTicket(
+            savedOrder.id,
+            queryRunner,
+          );
+        }
+
+
+
+        // Create reminder
+        await this.remindersV1Service.createReminders(
+          savedOrder,
+          queryRunner,
+        );
+
+        return savedOrder;
+      },
     );
 
 
-    return savedOrder;
+    /**
+     * Transaction sudah commit
+     * Baru kirim queue
+     */
+    const tickets =
+      await this.ticketsV1Service.findByOrderId(
+        result.id,
+      );
+
+
+    for (const ticket of tickets) {
+
+      console.log(
+        'SEND QR QUEUE',
+        ticket.id,
+      );
+
+      await this.queueTicketsService.sendToQueue(
+        {
+          ticketId: ticket.id,
+          ticketNumber: ticket.ticketNumber,
+        },
+        QueueTicketJob.GenerateQrCode,
+      );
+
+    }
+
+
+    return result;
   }
 
   async markTicketEmailSent(
@@ -178,10 +336,11 @@ export class OrdersV1Service {
   }
 
   async cancelOrder(
-    idOrder: string
+    userId: string,
+    orderId: string
   ): Promise<IOrder> {
     // Cek Order
-    const order = await this.ordersV1Repository.findOneById(idOrder)
+    const order = await this.ordersV1Repository.findOneByIdAndUserId(orderId, userId)
 
     if (!order) {
       throw new NotFoundException('Order Not Found')

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Repository } from "typeorm";
+import { QueryRunner, Repository } from "typeorm";
 import { IOrder } from "../../../infrastructures/databases/interfaces/order.interface";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Orders } from "../../../infrastructures/databases/entities/orders.entity";
@@ -85,49 +85,63 @@ export class OrdersV1Repository extends Repository<IOrder> {
     return query
   }
 
-  async getTotalReservedTicket(eventId: string): Promise<number> {
-    const alias = this.metadata.name
-    const query = this.createQueryBuilder(this.metadata.name)
-      .select(
-        `COALESCE(SUM(${alias}.quantity), 0)`,
-        'total'
-      );
+  async getTotalReservedTicket(
+    eventId: string,
+    queryRunner: QueryRunner,
+  ): Promise<number> {
 
-    QueryFilterUtil.applyFilters(query, {
-      filters: [
-        {
-          field: `${alias}.eventId`,
-          value: eventId,
-        },
-        {
-          field: `${alias}.status`,
-          value: [
-            OrderStatusEnum.PENDING,
-            OrderStatusEnum.PAID,
-          ],
-          operator: 'in',
-        },
-      ],
-    });
+    const alias = 'orders';
 
-    const result = await query.getRawOne<{ total: string }>();
+    const result =
+      await queryRunner.manager
+        .getRepository(Orders)
+        .createQueryBuilder(alias)
+        .select(
+          `COALESCE(SUM(${alias}.quantity),0)`,
+          'total',
+        )
+        .where(
+          `${alias}.eventId = :eventId`,
+          {
+            eventId,
+          },
+        )
+        .andWhere(
+          `${alias}.status IN (:...statuses)`,
+          {
+            statuses: [
+              OrderStatusEnum.PENDING,
+              OrderStatusEnum.PAID,
+            ],
+          },
+        )
+        .getRawOne<{ total: string }>();
 
-    return Number(result?.total);
+
+    return Number(result?.total ?? 0);
   }
 
   async createOrder(
-    data: ICreateOrder
+    data: ICreateOrder,
+    queryRunner: QueryRunner,
   ): Promise<IOrder> {
-    const entity = this.create({
-      userId: data.userId,
-      eventId: data.eventId,
-      quantity: data.quantity,
-      totalPrice: data.totalPrice,
-      status: OrderStatusEnum.PENDING,
-      expiredAt: data.expiredAt
-    })
 
-    return await this.save(entity)
+    const repo =
+      queryRunner.manager.getRepository(Orders);
+
+
+    const entity =
+      repo.create({
+        userId: data.userId,
+        eventId: data.eventId,
+        quantity: data.quantity,
+        totalPrice: data.totalPrice,
+        status: OrderStatusEnum.PENDING,
+        expiredAt: data.expiredAt,
+      });
+
+
+    return repo.save(entity);
   }
 
   async markTicketEmailSent(
@@ -135,15 +149,25 @@ export class OrdersV1Repository extends Repository<IOrder> {
   ): Promise<boolean> {
 
     const result =
-      await this.update(
-        {
-          id,
-          ticketEmailSent: false,
-        },
-        {
+      await this.createQueryBuilder()
+        .update(Orders)
+        .set({
           ticketEmailSent: true,
-        },
-      );
+        })
+        .where(
+          'id = :id',
+          {
+            id,
+          },
+        )
+        .andWhere(
+          'ticket_email_sent = false',
+        )
+        .andWhere(
+          'deleted_at IS NULL',
+        )
+        .execute();
+
 
     return result.affected === 1;
   }
@@ -157,7 +181,49 @@ export class OrdersV1Repository extends Repository<IOrder> {
         id: orderId,
         userId,
       },
+      relations: {
+        event: true,
+        tickets: true
+      }
     });
   }
 
+  async findOneByIdAndUserIdWithLock(
+    orderId: string,
+    userId: string,
+    queryRunner: QueryRunner,
+  ): Promise<IOrder | null> {
+
+    return queryRunner.manager
+      .getRepository(Orders)
+      .createQueryBuilder('orders')
+      .where(
+        'orders.id = :orderId',
+        {
+          orderId,
+        },
+      )
+      .andWhere(
+        'orders.userId = :userId',
+        {
+          userId,
+        },
+      )
+      .setLock(
+        'pessimistic_write',
+      )
+      .getOne();
+
+  }
+
+  async saveWithTransaction(
+    entity: IOrder,
+    queryRunner: QueryRunner,
+  ): Promise<IOrder> {
+
+    const repo =
+      queryRunner.manager.getRepository(Orders);
+
+    return repo.save(entity);
+  }
 }

@@ -4,6 +4,8 @@ import { ReminderTypeEnum } from "../../../shared/enums/reminder-type.enum";
 import { RemindersV1Repository } from "../repositories/reminders-v1.repository";
 import { IOrder } from "../../../infrastructures/databases/interfaces/order.interface";
 import { generateReminderSchedules } from "../helpers/reminder.helper";
+import { QueryRunner } from "typeorm";
+import { Reminders } from "../../../infrastructures/databases/entities/reminder.entity";
 
 
 @Injectable()
@@ -17,24 +19,27 @@ export class RemindersV1Service {
 
 
   async createReminders(
-    order: IOrder
+    order: IOrder,
+    queryRunner: QueryRunner,
   ) {
-
-    const eventDate =
-      order.event.eventDate;
-
+    const eventDate = order.event.eventDate
 
     const reminders =
       generateReminderSchedules({
         orderId: order.id,
-        eventDate: order.event.eventDate
+        eventDate: eventDate,
       });
 
 
-    return this.remindersV1Repository.createMany(
-      reminders
-    );
+    const repo =
+      queryRunner.manager.getRepository(
+        Reminders,
+      );
 
+
+    return repo.save(
+      reminders,
+    );
   }
 
 
