@@ -4,6 +4,7 @@ import {
     ExecutionContext,
     Inject,
     Injectable,
+    Logger,
     NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -17,6 +18,7 @@ import { CacheKeyUtil } from '../utils/cache-key.util';
 
 @Injectable()
 export class HttpCacheInterceptor implements NestInterceptor {
+    private readonly logger = new Logger(HttpCacheInterceptor.name)
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private reflector: Reflector,
@@ -57,9 +59,9 @@ export class HttpCacheInterceptor implements NestInterceptor {
             if (cached !== null && cached !== undefined) {
                 return of(cached);
             }
-
-
         } catch (e) {
+            const err = e instanceof Error ? e : new Error(String(e));
+            this.logger.error(`Cache set failed key=${cacheKey}`, err.stack);
             console.error("CACHE SET ERROR:", e);
         }
 

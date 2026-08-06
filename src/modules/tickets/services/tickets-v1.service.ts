@@ -38,10 +38,8 @@ export class TicketsV1Service {
     )
   }
 
-  private generateTicketNumber() {
-    return `TKT-${randomUUID()
-      .slice(0, 8)
-      .toUpperCase()}`;
+  private generateTicketNumber(orderId: string, index) {
+    return `TKT-${orderId.slice(0, 8).toUpperCase()}-${String(index + 1).padStart(2, '0')}`;
   }
 
   async paginate(
@@ -74,27 +72,23 @@ export class TicketsV1Service {
 
   async createTicket(
     orderId: string,
+    quantity: number,
     queryRunner: QueryRunner,
-  ): Promise<ITicket> {
-
-    const ticketNumber =
-      this.generateTicketNumber();
-
+  ): Promise<ITicket[]> {
 
     const repo =
       queryRunner.manager.getRepository(
         Tickets,
       );
 
-
-    const entity =
+    const entities = Array.from({ length: quantity }, (_, index) =>
       repo.create({
         orderId,
-        ticketNumber,
-      });
+        ticketNumber: this.generateTicketNumber(orderId, index),
+      }),
+    );
 
-
-    return await repo.save(entity);
+    return await repo.save(entities);
   }
 
   async findByOrderId(

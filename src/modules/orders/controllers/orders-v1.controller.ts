@@ -30,30 +30,33 @@ export class OrdersV1Controller {
   async paginate(
     @Query() paginationDto: OrderPaginateV1Request
   ): Promise<IPaginateData<OrderV1Response>> {
-    return await this.ordersV1Service.paginate(paginationDto)
-  }
+    const result = await this.ordersV1Service.paginate(paginationDto)
 
-  // ================================================
-  //                    AUTHENTICATE
-  //=================================================
-
-  @Roles(RoleEnum.ADMIN, RoleEnum.USER)
-  @Get(':orderId')
-  @ApiOperation({ summary: 'Get order by ID' })
-  @ApiResponse({ status: 200 })
-  @ApiParam({ name: 'orderId', description: 'Order ID' })
-  async orderById(
-    @CurrentUser() user: IUser,
-    @Param('orderId') orderId: string
-  ): Promise<OrderV1Response> {
-    const data = await this.ordersV1Service.findOneByIdWithPermission(orderId, user)
-
-    return OrderV1Response.MapEntity(data)
+    return {
+      meta: result.meta,
+      items: OrderV1Response.MapEntities(result.items)
+    }
   }
 
   // ================================================
   //                    USER
   //=================================================
+
+  @Roles(RoleEnum.USER)
+  @Get('me')
+  @ApiOperation({ summary: 'Get all orders User Login' })
+  @ApiResponse({ status: 200 })
+  async paginateUser(
+    @CurrentUser() user: IUser,
+    @Query() paginationDto: OrderPaginateV1Request
+  ): Promise<IPaginateData<OrderV1Response>> {
+    const result = await this.ordersV1Service.paginateByUserId(user.id, paginationDto)
+
+    return {
+      meta: result.meta,
+      items: OrderV1Response.MapEntities(result.items)
+    }
+  }
 
   @Roles(RoleEnum.USER)
   @Post('')
@@ -93,6 +96,24 @@ export class OrdersV1Controller {
     @Param('orderId') orderId: string
   ) {
     const data = await this.ordersV1Service.cancelOrder(user.id, orderId)
+
+    return OrderV1Response.MapEntity(data)
+  }
+
+  // ================================================
+  //                    AUTHENTICATE
+  //=================================================
+
+  @Roles(RoleEnum.ADMIN, RoleEnum.USER)
+  @Get(':orderId')
+  @ApiOperation({ summary: 'Get order by ID' })
+  @ApiResponse({ status: 200 })
+  @ApiParam({ name: 'orderId', description: 'Order ID' })
+  async orderById(
+    @CurrentUser() user: IUser,
+    @Param('orderId') orderId: string
+  ): Promise<OrderV1Response> {
+    const data = await this.ordersV1Service.findOneByIdWithPermission(orderId, user)
 
     return OrderV1Response.MapEntity(data)
   }

@@ -159,4 +159,10 @@ export const ErrorMessageConstant = {
      */
     RecaptchaTokenRequired: 'reCAPTCHA token is required',
     RecaptchaValidationFailed: 'reCAPTCHA validation failed',
+
+    FieldMinValue: (fieldName: string, value: number) =>
+        `${fieldName} must be at least ${value}`,
+
+    FieldMaxValue: (fieldName: string, value: number) =>
+        `${fieldName} must not exceed ${value}`,
 } as const;

@@ -40,10 +40,6 @@ export class StorageLocalService implements IStorageService {
 
       await writeFile(absolutePath, data.buffer);
 
-      this.logger.log(
-        `File uploaded successfully: ${relativePath}`
-      );
-
       return relativePath;
 
     } catch (error: any) {
@@ -88,12 +84,6 @@ export class StorageLocalService implements IStorageService {
         await readFile(
           absolutePath
         );
-
-
-      this.logger.log(
-        `File retrieved successfully: ${data.path}`
-      );
-
 
       return file;
 

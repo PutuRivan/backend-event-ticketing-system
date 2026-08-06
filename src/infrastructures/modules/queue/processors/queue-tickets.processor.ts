@@ -12,11 +12,14 @@ import { QueueMailService } from "../services/queue-mail.service";
 import { MailSendDto } from "../../mail/dto/mail-send.dto";
 import { MailTemplateFileEnum } from "../../mail/enums/mail-template-file.enum";
 import { OrdersV1Service } from "../../../../modules/orders/services/orders-v1.service";
+import { Logger } from "@nestjs/common";
 
 @Processor(QueueName.Tickets, {
   concurrency: 5,
 })
 export class QueueTicketProcessor extends WorkerHost {
+  private readonly logger = new Logger(QueueTicketProcessor.name)
+
   private storageService: IStorageService;
   constructor(
     private readonly ticketsV1Service: TicketsV1Service,
@@ -152,6 +155,10 @@ export class QueueTicketProcessor extends WorkerHost {
           if (!locked) {
             break;
           }
+
+          this.logger.log(
+            `All tickets generated. Sending email order=${order.id}, quantity=${tickets.length}`
+          );
 
           const attachments =
             tickets.map(ticket => ({

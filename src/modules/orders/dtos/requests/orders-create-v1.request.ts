@@ -24,9 +24,16 @@ export const ordersCreateV1Schema = z.object({
         'integer',
       ),
     })
-    .positive({
-      message: ErrorMessageConstant.FieldMustBePositive(
+    .min(1, {
+      message: ErrorMessageConstant.FieldMinValue(
         'Quantity',
+        1,
+      ),
+    })
+    .max(10, {
+      message: ErrorMessageConstant.FieldMaxValue(
+        'Quantity',
+        10,
       ),
     }),
 });

@@ -72,6 +72,59 @@ export class OrdersV1Repository extends Repository<IOrder> {
     }
   }
 
+  async paginateByUserId(
+    userId: string,
+    request: OrderPaginateV1Request
+  ) {
+    const alias = this.metadata.name
+    const ALLOWED_SORT = new Map<string, string>([
+      ['created_at', `${alias}.createdAt`],
+      ['updated_at', `${alias}.updatedAt`]
+    ])
+
+    const query = this
+      .createQueryBuilder(this.metadata.name)
+      .leftJoinAndSelect(`${alias}.tickets`, 'tickets')
+      .leftJoinAndSelect(`${alias}.event`, 'event')
+
+    QueryFilterUtil.validateSortValueDto(request, ALLOWED_SORT)
+
+    QueryFilterUtil.applyFilters(query, {
+      filters: [
+        {
+          field: `${alias}.status`,
+          value: request.status
+        },
+        {
+          field: `${alias}.eventId`,
+          value: request.eventId
+        },
+        {
+          field: `${alias}.userId`,
+          value: userId
+        }
+      ]
+    })
+
+    QuerySortingUtil.applySorting(query, {
+      sort: request.sort,
+      order: request.order,
+      allowedSorts: ALLOWED_SORT
+    })
+
+    query.take(request.perPage)
+    query.skip(PaginationUtil.countOffset(request))
+
+    const [items, count] = await query.getManyAndCount()
+
+    const meta = PaginationUtil.mapMeta(count, request)
+
+    return {
+      meta,
+      items
+    }
+  }
+
   async findOneById(id: string): Promise<IOrder | null> {
     const alias = this.metadata.name
     const query = this
@@ -126,9 +179,7 @@ export class OrdersV1Repository extends Repository<IOrder> {
     queryRunner: QueryRunner,
   ): Promise<IOrder> {
 
-    const repo =
-      queryRunner.manager.getRepository(Orders);
-
+    const repo = queryRunner.manager.getRepository(Orders);
 
     const entity =
       repo.create({

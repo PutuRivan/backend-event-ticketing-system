@@ -9,6 +9,8 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class OrderV1Response {
   @ApiProperty()
+  id: string
+  @ApiProperty()
   totalPrice: number;
   @ApiProperty()
   status: OrderStatusEnum;
@@ -24,6 +26,7 @@ export class OrderV1Response {
   tickets: ITicket[];
 
   constructor(entity: IOrder) {
+    this.id = entity.id
     this.user = entity.user
     this.event = entity.event
     this.totalPrice = entity.totalPrice

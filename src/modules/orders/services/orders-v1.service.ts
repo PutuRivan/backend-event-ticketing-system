@@ -1,6 +1,6 @@
 import { EventV1Repository } from '../../events/repositories/events-v1.repository';
 import { OrdersV1Repository } from './../repositories/orders-v1.repository';
-import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 import { ErrorMessageConstant } from '../../../shared/constants/message.constant';
 import { IOrder } from '../../../infrastructures/databases/interfaces/order.interface';
 import { OrderPaginateV1Request } from '../dtos/requests/orders-paginate-v1.request';
@@ -25,6 +25,7 @@ import { TransactionUtil } from '../../../shared/utils/transaction.util';
 export class OrdersV1Service {
   private queueTicketsService: IQueueService
   private queueOrderService: IQueueService
+  private readonly logger = new Logger(OrdersV1Service.name);
 
   constructor(
     private readonly ordersV1Repository: OrdersV1Repository,
@@ -115,17 +116,16 @@ export class OrdersV1Service {
 
 
         //Insert order
-        const order =
-          await this.ordersV1Repository.createOrder(
-            {
-              userId,
-              eventId: dataOrder.eventId,
-              quantity: dataOrder.quantity,
-              totalPrice,
-              expiredAt,
-            },
-            queryRunner,
-          );
+        const order = await this.ordersV1Repository.createOrder(
+          {
+            userId,
+            eventId: dataOrder.eventId,
+            quantity: dataOrder.quantity,
+            totalPrice,
+            expiredAt,
+          },
+          queryRunner,
+        );
 
 
         return order;
@@ -208,15 +208,15 @@ export class OrdersV1Service {
     return order;
   }
 
-  // async paginateByUserId(
-  //   userId: string,
-  //   paginationDto: OrderPaginateV1Request,
-  // ): Promise<IPaginateData<IOrder>> {
-  //   return await this.ordersV1Repository.paginateByUserId(
-  //     userId,
-  //     paginationDto,
-  //   );
-  // }
+  async paginateByUserId(
+    userId: string,
+    paginationDto: OrderPaginateV1Request,
+  ): Promise<IPaginateData<IOrder>> {
+    return await this.ordersV1Repository.paginateByUserId(
+      userId,
+      paginationDto,
+    );
+  }
 
   async paymentOrder(
     userId: string,
@@ -226,7 +226,7 @@ export class OrdersV1Service {
     const result = await TransactionUtil.execute(
       this.dataSource,
       async (queryRunner) => {
-        console.log('TRANSACTION START');
+        // this.logger.debug(`payment tx start orderId=${orderId} userId=${userId}`);
         // Ambil order + lock row
         const order =
           await this.ordersV1Repository.findOneByIdAndUserIdWithLock(
@@ -275,15 +275,11 @@ export class OrdersV1Service {
             queryRunner,
           );
 
-        // Create ticket
-        for (let i = 0; i < savedOrder.quantity; i++) {
-          await this.ticketsV1Service.createTicket(
-            savedOrder.id,
-            queryRunner,
-          );
-        }
-
-
+        await this.ticketsV1Service.createTicket(
+          savedOrder.id,
+          savedOrder.quantity,
+          queryRunner,
+        );
 
         // Create reminder
         await this.remindersV1Service.createReminders(
@@ -307,12 +303,7 @@ export class OrdersV1Service {
 
 
     for (const ticket of tickets) {
-
-      console.log(
-        'SEND QR QUEUE',
-        ticket.id,
-      );
-
+      // this.logger.debug(`enqueue QR ticketId=${ticket.id}`);
       await this.queueTicketsService.sendToQueue(
         {
           ticketId: ticket.id,
